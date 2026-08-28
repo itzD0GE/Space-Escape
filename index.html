@@ -202,6 +202,7 @@
 
         .buff-shield { color: #ffd700; }
         .buff-rapid { color: #ff6600; }
+        .buff-multishot { color: #b06bff; }
 
         .about-btn {
             position: absolute;
@@ -327,6 +328,7 @@
 
         .pu-green { background: #39ff14; box-shadow: 0 0 6px #39ff14; }
         .pu-orange { background: #ff6600; box-shadow: 0 0 6px #ff6600; }
+        .pu-purple { background: #b06bff; box-shadow: 0 0 6px #b06bff; }
         .pu-gold { background: #ffd700; box-shadow: 0 0 6px #ffd700; }
         .pu-1up { background: #ff0080; box-shadow: 0 0 6px #ff0080; }
 
@@ -609,6 +611,16 @@
 
         .powerup-1up::after {
             content: '1UP';
+        }
+
+        .powerup-multishot {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #b06bff;
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+            box-shadow: 0 0 12px #b06bff;
+            animation: collectiblePulse 1.6s ease-in-out infinite;
         }
 
         .floating-text {
@@ -1153,7 +1165,8 @@
                 <p>WASD / Arrow Keys or Mouse/Touch to move. SPACE, Click, or Tap to shoot.</p>
                 <h3>Pickups</h3>
                 <p><span class="pu-dot pu-green"></span> <strong>Green Crystal</strong> — instant bonus points.</p>
-                <p><span class="pu-dot pu-orange"></span> <strong>Orange Diamond</strong> — Rapid Fire: boosts fire rate for 5 seconds. Grab more before it expires to stack it even faster.</p>
+                <p><span class="pu-dot pu-orange"></span> <strong>Orange Diamond</strong> — Rapid Fire: boosts fire rate for 5 seconds. Grab more before it expires and it keeps getting faster — no limit.</p>
+                <p><span class="pu-dot pu-purple"></span> <strong>Purple Gem</strong> — Multi-Shot: adds an extra bolt to your spread for 5 seconds. Stacks uncapped, and combines with Rapid Fire for a wall of fast-firing bolts.</p>
                 <p><span class="pu-dot pu-gold"></span> <strong>Gold Orb</strong> — Shield: absorbs the next 3 asteroid hits (glowing ring shows remaining charge).</p>
                 <p><span class="pu-dot pu-1up"></span> <strong>Pink 1UP</strong> — instantly grants an extra life. Rare — grab it fast!</p>
                 <h3>Waves &amp; Perks</h3>
@@ -1280,7 +1293,9 @@
                 this.shootCooldown = this.shootCooldownBase;
                 this.shootTimer = null;
                 this.rapidStacks = 0;
-                this.maxRapidStacks = 5;
+                this.multishotStacks = 0;
+                this.multishotActiveUntil = 0;
+                this.multishotTimer = null;
                 
                 // Game objects
                 this.enemies = [];
@@ -1681,6 +1696,9 @@
                 this.shootCooldownBase = 250;
                 this.shootCooldown = this.shootCooldownBase;
                 this.rapidStacks = 0;
+                this.multishotStacks = 0;
+                this.multishotActiveUntil = 0;
+                if (this.multishotTimer) clearTimeout(this.multishotTimer);
                 this.playerPos = { x: 400, y: 300 };
                 this.playerSpeed = 5;
                 this.shotCount = 1;
@@ -2084,6 +2102,14 @@
                 this.player.style.top = this.playerPos.y + 'px';
             }
             
+            getSpreadAngles(count) {
+                if (count <= 1) return [0];
+                const spreadWidth = Math.min(150, (count - 1) * 9);
+                const step = spreadWidth / (count - 1);
+                const start = -spreadWidth / 2;
+                return Array.from({ length: count }, (_, i) => start + i * step);
+            }
+            
             shoot() {
                 if (this.perkChoicePending || !this.gameRunning || this.isPaused) return;
                 const now = Date.now();
@@ -2098,8 +2124,8 @@
                     baseAngle = this.lastMoveAngle;
                 }
                 
-                const spreadAngles = { 1: [0], 2: [-8, 8], 3: [-14, 0, 14] };
-                const angles = spreadAngles[this.shotCount] || [0];
+                const totalShots = this.shotCount + (this.multishotStacks || 0);
+                const angles = this.getSpreadAngles(totalShots);
                 
                 angles.forEach(angleDeg => {
                     const rad = baseAngle + (angleDeg * Math.PI) / 180;
@@ -2285,7 +2311,11 @@
             spawnPowerup() {
                 const arenaRect = this.arena.getBoundingClientRect();
                 const roll = Math.random();
-                const type = roll < 0.08 ? '1up' : (roll < 0.54 ? 'shoot' : 'shield');
+                let type;
+                if (roll < 0.08) type = '1up';
+                else if (roll < 0.38) type = 'shoot';
+                else if (roll < 0.68) type = 'multishot';
+                else type = 'shield';
                 const powerup = {
                     x: Math.random() * (arenaRect.width - 15),
                     y: Math.random() * (arenaRect.height - 15),
@@ -2407,9 +2437,9 @@
             
             activatePowerup(type, x = this.playerPos.x, y = this.playerPos.y) {
                 if (type === 'shoot') {
-                    this.rapidStacks = Math.min(this.maxRapidStacks, this.rapidStacks + 1);
+                    this.rapidStacks++;
                     const multiplier = 1 + this.rapidStacks * 0.35;
-                    this.shootCooldown = Math.max(50, Math.round(this.shootCooldownBase / multiplier));
+                    this.shootCooldown = Math.max(30, Math.round(this.shootCooldownBase / multiplier));
                     this.rapidActiveUntil = Date.now() + 5000;
                     if (this.shootTimer) clearTimeout(this.shootTimer);
                     this.shootTimer = setTimeout(() => {
@@ -2418,6 +2448,15 @@
                         this.rapidStacks = 0;
                     }, 5000);
                     this.showFloatingText(x, y, this.rapidStacks > 1 ? `RAPID FIRE x${this.rapidStacks}!` : 'RAPID FIRE!', '#ff6600');
+                } else if (type === 'multishot') {
+                    this.multishotStacks = (this.multishotStacks || 0) + 1;
+                    this.multishotActiveUntil = Date.now() + 5000;
+                    if (this.multishotTimer) clearTimeout(this.multishotTimer);
+                    this.multishotTimer = setTimeout(() => {
+                        this.multishotStacks = 0;
+                        this.multishotActiveUntil = 0;
+                    }, 5000);
+                    this.showFloatingText(x, y, `MULTI-SHOT x${this.shotCount + this.multishotStacks}!`, '#b06bff');
                 } else if (type === 'shield') {
                     this.hasShield = true;
                     this.shieldHits = this.maxShieldHits;
@@ -2826,6 +2865,7 @@
                     shieldRing.style.opacity = this.hasShield ? Math.max(0.3, this.shieldHits / this.maxShieldHits) : 0;
                 }
                 if (this.rapidActiveUntil > now) buffs.push(`<span class="buff-rapid">⚡ RAPID FIRE x${this.rapidStacks}</span>`);
+                if (this.multishotActiveUntil > now) buffs.push(`<span class="buff-multishot">🔱 MULTI-SHOT x${this.shotCount + this.multishotStacks}</span>`);
                 document.getElementById('activeBuffs').innerHTML = buffs.join('');
             }
             
