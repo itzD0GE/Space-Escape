@@ -1175,24 +1175,24 @@
 
         .dvd-logo {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100px;
-            height: 60px;
+          top: 0;
+          left: 0;
+          transform: none;
+          width: 58px;
+          height: 35px;
             background: linear-gradient(45deg, #ff0080, #00f5ff, #39ff14, #ff6600);
-            border-radius: 10px;
+          border-radius: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Orbitron', monospace;
             font-weight: 900;
-            font-size: 18px;
+            font-size: 12px;
             color: white;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+            opacity: 0.3;
             z-index: 300;
-            animation: dvdZoomOut 3s ease-out forwards;
             pointer-events: none;
         }
 
@@ -1786,6 +1786,7 @@
       this.collectibleSpawnRate = 300;
       this.powerupSpawnRate = 1e3;
       this.cornerHitCooldown = false;
+      this.dvdWaveShown = null;
       const audioWindow = window;
       this.audioCtx = new (window.AudioContext || audioWindow.webkitAudioContext)();
       this.audioUnlocked = false;
@@ -2162,6 +2163,7 @@
       this.score = 0;
       this.lives = 3;
       this.wave = 1;
+      this.dvdWaveShown = null;
       this.lastAddedId = null;
       this.enemiesKilled = 0;
       this.waveMultiplier = 1;
@@ -2764,38 +2766,82 @@
         const distanceX = Math.abs(playerCenterX - corner.x);
         const distanceY = Math.abs(playerCenterY - corner.y);
         if (distanceX <= tolerance && distanceY <= tolerance) {
-          if (!this.cornerHitCooldown) {
-            this.triggerDVDEasterEgg();
-            this.cornerHitCooldown = true;
-            setTimeout(() => {
-              this.cornerHitCooldown = false;
-            }, 1e4);
-          }
+          if (this.cornerHitCooldown) return;
+          this.cornerHitCooldown = true;
+          this.triggerDVDEasterEgg();
+          setTimeout(() => {
+            this.cornerHitCooldown = false;
+          }, 1e4);
         }
       });
     }
     triggerDVDEasterEgg() {
-      const dvdLogo = document.createElement("div");
-      dvdLogo.className = "dvd-logo";
-      dvdLogo.textContent = "DVD";
-      this.arena.appendChild(dvdLogo);
-      const message = document.createElement("div");
-      message.className = "easter-egg-message";
-      message.innerHTML = `
-                    \u{1F389} CORNER HIT! \u{1F389}<br>
-                    DVD SCREENSAVER ACHIEVED!<br>
-                    <div style="font-size: 0.8rem; margin-top: 10px; opacity: 0.8;">
-                        Bonus: 1000 points \xD7 wave multiplier!
-                    </div>
-                `;
-      this.arena.appendChild(message);
+        const message = document.createElement("div");
+        message.className = "easter-egg-message";
+        message.innerHTML = `
+              \u{1F389} CORNER HIT! \u{1F389}<br>
+              DVD SCREENSAVER ACHIEVED!<br>
+              <div style="font-size: 0.8rem; margin-top: 10px; opacity: 0.8;">
+                Bonus: 1000 points \xD7 wave multiplier!
+              </div>
+            `;
+        this.arena.appendChild(message);
       this.createConfettiExplosion();
       this.createSound("easterEgg");
       this.addScore(1e3 * this.waveMultiplier);
+      if (this.dvdWaveShown === this.wave || this.dvdScreensaverActive || this.arena.querySelector(".dvd-logo")) {
+        setTimeout(() => message.remove(), 4000);
+        return;
+      }
+      this.dvdScreensaverActive = true;
+      this.dvdWaveShown = this.wave;
+      const dvdLogo = document.createElement("div");
+      dvdLogo.className = "dvd-logo";
+      dvdLogo.textContent = "DVD";
+      const colors = ["#ff0080", "#00f5ff", "#39ff14", "#ff6600", "#ffd700", "#b06bff"];
+      const bounds = this.arena.getBoundingClientRect();
+      let x = Math.random() * Math.max(1, bounds.width - 100);
+      let y = Math.random() * Math.max(1, bounds.height - 60);
+      let velocityX = Math.random() < 0.5 ? 1.8 : -1.8;
+      let velocityY = Math.random() < 0.5 ? 1.35 : -1.35;
+      let endsAt = 0;
+      const animateDVD = () => {
+        if (!dvdLogo.parentNode || Date.now() >= endsAt) {
+          dvdLogo.remove();
+          this.dvdScreensaverActive = false;
+          return;
+        }
+        const arenaWidth = this.arena.clientWidth;
+        const arenaHeight = this.arena.clientHeight;
+        x += velocityX;
+        y += velocityY;
+        let bounced = false;
+        if (x <= 0 || x >= arenaWidth - 58) {
+          velocityX *= -1;
+          x = Math.max(0, Math.min(arenaWidth - 58, x));
+          bounced = true;
+        }
+        if (y <= 0 || y >= arenaHeight - 35) {
+          velocityY *= -1;
+          y = Math.max(0, Math.min(arenaHeight - 35, y));
+          bounced = true;
+        }
+        if (bounced) {
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          dvdLogo.style.background = color;
+          dvdLogo.style.boxShadow = `0 0 30px ${color}`;
+        }
+        dvdLogo.style.left = `${x}px`;
+        dvdLogo.style.top = `${y}px`;
+        requestAnimationFrame(animateDVD);
+      };
       setTimeout(() => {
-        if (dvdLogo.parentNode) dvdLogo.parentNode.removeChild(dvdLogo);
         if (message.parentNode) message.parentNode.removeChild(message);
-      }, 4e3);
+        if (!this.dvdScreensaverActive) return;
+        this.arena.appendChild(dvdLogo);
+        endsAt = Date.now() + 15000;
+        animateDVD();
+      }, 4000);
     }
     createConfettiExplosion() {
       const confettiCount = 50;
@@ -3653,7 +3699,7 @@
       const bobaTeaBoss = {
         label: "Boba Colossus",
         eliteLabel: "Boba Colossus, Tapioca Tyrant",
-        size: 104,
+        size: 122,
         speed: 0.68,
         health: 28,
         points: 2400,
