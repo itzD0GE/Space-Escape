@@ -149,13 +149,13 @@
         .boba-spill-tea {
           position: absolute;
           pointer-events: none;
-          z-index: 30;
-          animation: bobaSpillFloat 2.4s cubic-bezier(0.12, 0.7, 0.25, 1) forwards;
+          z-index: 310;
+          animation: bobaSpillFloat 9.5s cubic-bezier(0.12, 0.7, 0.25, 1) forwards;
         }
 
         .boba-spill-pearl {
-          width: 9px;
-          height: 9px;
+          width: 12px;
+          height: 12px;
           border: 1px solid #e5a4c9;
           border-radius: 50%;
           background: radial-gradient(circle at 30% 25%, #b47c9e, #51274c 52%, #251326 100%);
@@ -163,8 +163,8 @@
         }
 
         .boba-spill-tea {
-          width: 13px;
-          height: 13px;
+          width: 18px;
+          height: 18px;
           border: 1px solid rgba(255, 224, 161, 0.8);
           border-radius: 50% 45% 50% 40%;
           background: radial-gradient(circle at 30% 25%, #ffe5b5, #d8895b 58%, #8d4052 100%);
@@ -184,6 +184,28 @@
         @keyframes bobaSpillFade {
           from { opacity: 0.92; filter: blur(0); }
           to { opacity: 0; filter: blur(2px); }
+        }
+
+        .boba-celebration {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          z-index: 320;
+          transform: translate(-50%, -50%);
+          color: #ffe2a7;
+          font-size: clamp(1.15rem, 4vw, 2.4rem);
+          font-weight: 900;
+          letter-spacing: 2px;
+          text-align: center;
+          text-shadow: 0 0 14px #ff7fb3, 0 0 28px #ffb36a;
+          pointer-events: none;
+          animation: bobaCelebrationFade 4.5s ease-out forwards;
+        }
+
+        @keyframes bobaCelebrationFade {
+          0% { opacity: 0; transform: translate(-50%, -50%) scale(0.55); }
+          12%, 68% { opacity: 1; }
+          100% { opacity: 0; transform: translate(-50%, calc(-50% - 30px)) scale(1.08); }
         }
 
         .player {
@@ -1710,7 +1732,7 @@
     <script>
 (() => {
   // src/game.ts
-  const GAME_VERSION = "1.5.2";
+  const GAME_VERSION = "1.5.3";
   var SpaceEscapeGame = class {
     constructor() {
       this.arena = document.getElementById("gameArena");
@@ -1740,6 +1762,7 @@
       this.duelRequestId = null;
       this.duelQueueMenuOpen = false;
       this.rivalQueueRefreshTimer = null;
+      this.bobaCelebrationActive = false;
       this.loadHighScore().then((score) => {
         this.highScore = score;
         this.updateUI();
@@ -2203,6 +2226,7 @@
       this.bossDefeated = false;
       this.intermissionActive = false;
       this.bobaSpillElements = [];
+      this.bobaCelebrationActive = false;
       this.replayFrames = [];
       this.replayFrame = 0;
       this.replayRecording = !this.demoMode;
@@ -2238,7 +2262,7 @@
     }
     gameLoop() {
       if (!this.gameRunning) return;
-      if (this.perkChoicePending || this.isPaused || this.duelIntroActive || this.duelQueueMenuOpen) {
+      if (this.perkChoicePending || this.isPaused || this.duelIntroActive || this.duelQueueMenuOpen || this.bobaCelebrationActive) {
         requestAnimationFrame(() => this.gameLoop());
         return;
       }
@@ -2574,6 +2598,14 @@
         if (!this.gameRunning) return;
         this.bossDefeatCountdownActive = false;
         this.waveBossActive = false;
+        if (this.bobaCelebrationActive) {
+          setTimeout(() => {
+            if (!this.gameRunning) return;
+            this.bobaCelebrationActive = false;
+            this.nextWave();
+          }, 10000);
+          return;
+        }
         this.nextWave();
       });
     }
@@ -2966,14 +2998,20 @@
     }
     createBobaSpill(x, y) {
       this.bobaSpillElements ||= [];
-      const pieces = 52;
+      this.bobaCelebrationActive = true;
+      const banner = document.createElement("div");
+      banner.className = "boba-celebration";
+      banner.textContent = "BOBA COLOSSUS SPLASHED!";
+      this.arena.appendChild(banner);
+      setTimeout(() => banner.remove(), 4600);
+      const pieces = 76;
       for (let index = 0; index < pieces; index++) {
         const spill = document.createElement("div");
         spill.className = index % 3 === 0 ? "boba-spill-tea" : "boba-spill-pearl";
         spill.style.left = `${x + 34 + (Math.random() - 0.5) * 24}px`;
         spill.style.top = `${y + 40 + (Math.random() - 0.5) * 24}px`;
-        spill.style.setProperty("--spill-x", `${(Math.random() - 0.5) * 250}px`);
-        spill.style.setProperty("--spill-y", `${20 + Math.random() * 190}px`);
+        spill.style.setProperty("--spill-x", `${(Math.random() - 0.5) * 320}px`);
+        spill.style.setProperty("--spill-y", `${20 + Math.random() * 230}px`);
         spill.style.setProperty("--spill-rotation", `${Math.random() * 540 - 270}deg`);
         spill.style.animationDelay = `${Math.random() * 0.35}s`;
         this.arena.appendChild(spill);
@@ -3699,7 +3737,7 @@
       const bobaTeaBoss = {
         label: "Boba Colossus",
         eliteLabel: "Boba Colossus, Tapioca Tyrant",
-        size: 122,
+        size: 142,
         speed: 0.68,
         health: 28,
         points: 2400,
@@ -3735,6 +3773,8 @@
         element: this.createElement(pattern.className)
       };
       boss.element.style.backgroundImage = pattern.art;
+      boss.element.style.width = `${pattern.size}px`;
+      boss.element.style.height = `${pattern.size}px`;
       boss.element.style.backgroundSize = "contain";
       boss.element.style.backgroundRepeat = "no-repeat";
       boss.element.style.backgroundPosition = "center";

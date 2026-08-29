@@ -1,6 +1,6 @@
 # 404: Space Escape
 
-**Version:** 1.5.2  
+**Version:** 1.5.3  
 **Last Updated:** 2026-08-29
 
 Space Escape is a wave-based browser shooter built as a playable 404 page. It supports single-player runs, a shared server leaderboard, and a short asynchronous Rival Contract queue.
@@ -183,7 +183,7 @@ Enemy speed, spawn pressure, and wave quotas increase over time. Standard boss p
 
 Wave 3 features the Boba Colossus, a large, fast, angry boba-tea boss with a straw. It fires three boba pearls in a fan volley. The pearls are enemy bullets and damage the player on contact.
 
-When defeated, the Boba Colossus spills harmless tea droplets and boba pearls. The effect remains visible through the perk screen, safe intermission, and next-wave countdown, then fades as the next wave starts.
+When defeated, the Boba Colossus starts a 10-second celebration before the perk screen appears: a large foreground burst of harmless tea droplets and boba pearls, plus a splash announcement. The spill remains visible through the safe intermission and next-wave countdown, then fades as the next wave starts.
 
 ### Safe Intermission
 
