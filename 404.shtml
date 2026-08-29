@@ -506,6 +506,14 @@
           filter: brightness(1.15);
         }
 
+        .rival-queue-count {
+          color: rgba(156, 239, 255, 0.8);
+          font-size: clamp(0.55rem, 1.8vw, 0.7rem);
+          letter-spacing: 1px;
+          text-align: center;
+          text-shadow: 0 0 8px #00f5ff;
+        }
+
         .game-container:has(#gameOver.show) .start-actions,
         .game-container:has(#initialsModal.show) .start-actions,
         .game-container:has(#successMessage.show) .start-actions {
@@ -1611,6 +1619,7 @@
             <div class="start-actions">
               <button class="start-choice" id="startButton" onclick="beginGame(event)">SINGLE PLAYER</button>
               <button class="start-choice" id="duelButton" onclick="openDuel(event)">RIVAL CONTRACT</button>
+              <div class="rival-queue-count" id="rivalQueueCount">RIVAL QUEUE: 0</div>
             </div>
             <div class="leaderboard" id="startLeaderboard">
                 <h3>TOP PILOTS</h3>
@@ -1730,6 +1739,7 @@
       this.duelQueueMode = "request";
       this.duelRequestId = null;
       this.duelQueueMenuOpen = false;
+      this.rivalQueueRefreshTimer = null;
       this.loadHighScore().then((score) => {
         this.highScore = score;
         this.updateUI();
@@ -1739,6 +1749,8 @@
         if (entries.length) this.mergeLeaderboard(entries);
         this.renderLeaderboard("startLeaderboardList");
       });
+      this.refreshRivalQueueCount();
+      this.rivalQueueRefreshTimer = setInterval(() => this.refreshRivalQueueCount(), 10000);
       this.enemiesKilled = 0;
       this.enemiesPerWave = 10;
       this.waveMultiplier = 1;
@@ -2386,10 +2398,21 @@
     async getDuelQueueState(requestId = "") {
       try {
         const response = await fetch(`api/duel-queue.php${requestId ? `?requestId=${encodeURIComponent(requestId)}` : ""}`);
-        return response.ok ? await response.json() : null;
+        if (!response.ok) return null;
+        const data = await response.json();
+        if (!requestId) this.renderRivalQueueCount(data.request ? 1 : 0);
+        return data;
       } catch (e) {
         return null;
       }
+    }
+    renderRivalQueueCount(count) {
+      const el = document.getElementById("rivalQueueCount");
+      if (el) el.textContent = `RIVAL QUEUE: ${count}`;
+    }
+    async refreshRivalQueueCount() {
+      if (document.getElementById("startScreen")?.classList.contains("hide")) return;
+      await this.getDuelQueueState();
     }
     async postDuelQueue(payload) {
       try {
