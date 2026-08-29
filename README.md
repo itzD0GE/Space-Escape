@@ -1,347 +1,277 @@
 # 404: Space Escape
 
-A self-contained arcade shooter built as a creative 404 page that evolved into a full wave-based action game. It runs in a single deployment file, uses plain HTML/CSS/JavaScript, and requires no framework or build step.
+**Version:** 1.5.2  
+**Last Updated:** 2026-08-29
 
-**Version:** 1.0.0
+Space Escape is a wave-based browser shooter built as a playable 404 page. It supports single-player runs, a shared server leaderboard, and a short asynchronous Rival Contract queue.
 
-## About
+The game has no package install or build step. Upload the game file, the `assets` folder, and the `api` folder together.
 
-This project started as a custom 404 page for a website and grew into a playable survival shooter. The game is built to be portable and easy to deploy: the gameplay logic, UI, and rendering are embedded directly in [404.shtml](404.shtml), which can be served as a static file on any web host.
+## Install
 
-## Game Overview
+### Local game preview
 
-You pilot a small starcraft through wave after wave of hostile drones, alien craft, gravity monsters, and elite boss entities. Your goal is to survive as long as possible, clear waves, collect upgrades, build score multipliers, and overcome increasingly difficult boss encounters.
+Open [404.shtml](404.shtml) in a modern browser to play single-player locally. PHP-backed leaderboard and Rival Contract features need a web server, so they do not work from `file://`.
 
-The game uses:
-- keyboard or mouse movement
-- click/Space to fire
-- wave-based progression
-- random pickups and permanent perk choices
-- local leaderboard persistence
-- optional server-side high score syncing when available
+### Local PHP test server
 
----
+From the project root, run:
 
-## Installation and Setup
-
-### Option 1: Open directly in a browser
-
-- Open [404.shtml](404.shtml) in any modern browser.
-- No build step is required.
-- This is the simplest setup for local testing and for deploying as a static 404 page.
-
-### Option 2: Serve locally with a simple web server
-
-From the project folder:
-
-```bash
-python -m http.server 8000
+```powershell
+php -S localhost:8000
 ```
 
-Then visit:
+Then open `http://localhost:8000/404.shtml`.
+
+PHP 8.0 or later is recommended. This enables the same relative API paths used in production.
+
+## Website Hosting
+
+Upload the complete project structure to the desired web directory. For example, to serve the game from `/bstudio/`, upload this exact tree:
 
 ```text
-http://localhost:8000/404.shtml
+public_html/
+`- bstudio/
+   |- 404.shtml
+   |- assets/
+   |  |- player-ship-tier-1.png
+   |  |- player-ship-tier-2.png
+   |  |- player-ship-tier-3.png
+   |  |- player-ship-tier-4.png
+   |  |- player-ship-tier-5.png
+   |  |- player-ship-tier-6.png
+   |  |- boba-tea-boss.svg
+   |  |- donut-matcha.png
+   |  |- donut-cinnamon.png
+   |  |- donut-vanilla.png
+   |  |- donut-strawberry.png
+   |  |- donut-blueberry.png
+   |  `- junk-*.png
+   `- api/
+      |- highscore.php
+      |- duel.php
+      `- duel-queue.php
 ```
 
-### Option 3: Deploy to a web server
+Requirements:
 
-Upload [404.shtml](404.shtml) to the host and serve it as a static page. For a 404 page, simply configure your host to serve that file for 404 responses. You do not need to upload [dist/](dist/) or [node_modules/](node_modules/) for the game itself.
+1. Preserve the `assets/` and `api/` directory names and contents.
+2. Enable PHP for the website directory.
+3. Make `api/` writable by PHP. Start with permissions `755`; use `775` only when required by the host.
+4. Verify `https://your-domain.example/bstudio/api/highscore.php` returns JSON rather than a 404 or HTML error page.
+5. Configure the host's custom 404 page to serve `404.shtml` when using the game as a site-wide 404 page.
 
-If the server supports a high-score endpoint, the game can try to sync scores through `/api/highscore.json`. If that endpoint is unavailable, it falls back to browser local storage.
+The API automatically creates these runtime data files inside `api/`:
 
----
+```text
+leaderboard.json   # Shared top-three scores
+duels.json         # Recent completed Rival Contract runs
+duel-queue.json    # Pending contract request and short-lived matches
+```
 
-## How to Play
+Do not create or edit these data files by hand. Do not upload `dist/` or `node_modules/`; neither is needed in production.
+
+## Project File Tree
+
+```text
+Space-Escape/
+|- 404.shtml                 # Full game client: HTML, CSS, JavaScript
+|- README.md                  # This game bible
+|- assets/                    # All browser-rendered game artwork
+|  |- player-ship-tier-*.png  # Six progressive player ship appearances
+|  |- boba-tea-boss.svg       # Wave 3 Boba Colossus art
+|  |- donut-*.png             # Flavor-coded pickup artwork
+|  `- junk-*.png              # Safe intermission debris
+`- api/                       # PHP endpoints and generated JSON storage
+   |- highscore.php            # Shared global leaderboard
+   |- duel.php                 # Completed Rival Contract run storage
+   `- duel-queue.php           # Request/accept contract matchmaking
+```
 
-### Controls
+## Controls
 
-- Move: WASD or Arrow Keys
-- Mouse: move by aiming the cursor in the arena
-- Shoot: Space bar or mouse click
-- Pause: `P` or the pause button
-- Mute: mute button in the HUD
-- Mobile: drag to move and tap to shoot
+| Action | Desktop | Touch |
+| --- | --- | --- |
+| Move | WASD or Arrow keys | Drag in the arena |
+| Fire | Space or click | Tap |
+| Pause | P, Escape, or pause button | Pause button |
+| Mute | M or mute button | Mute button |
 
-### Goal
+A minimal cursor glint marks the mouse within the arena without a long visual trail.
 
-- survive the enemy waves
-- clear enough enemies to trigger the next wave
-- defeat each wave boss to progress
-- keep your ship alive while building score and gathering upgrades
+## Core Game Flow
 
-### Survival Basics
+1. Choose **Single Player** or **Rival Contract**.
+2. Clear the normal enemy quota for the wave.
+3. Defeat the boss. A wave cannot complete while its boss lives.
+4. Watch the boss defeat effects and a `3, 2, 1, GO!` transition.
+5. Choose one perk.
+6. Fly through a harmless debris intermission.
+7. The next-wave countdown begins.
 
-- Your ship has 3 lives by default.
-- Enemy contact damages you.
-- If a boss or enemy overloads your ship, you lose a life.
-- If all lives are lost, the run ends.
+Each wave switches to the next player ship appearance tier, capped at tier 6.
 
-### Health and damage
+## Combat, Lives, and Shields
 
-- Enemy collisions and projectile hits damage your ship.
-- Shield pickups temporarily absorb hits.
-- A 1UP pickup adds an extra life.
-- Overheating from repeated rapid-fire stacking can also kill you, so there is a risk/reward system built into the weapon progression.
+- A run starts with 3 lives.
+- Enemy contact and enemy projectiles damage the player.
+- A 1UP adds one life.
+- Reaching 0 lives ends the run.
+- Boss projectiles are enemy-owned and cannot damage their own boss.
 
----
+### Shield Protection
 
-## Weapons and Weapon Mechanics
+A shield absorbs incoming enemy contact or bullets first. Each shielded hit consumes one shield charge and preserves both lives and weapons.
 
-### Primary weapon
+### Unshielded Damage
 
-Your base weapon fires forward. It is reliable and consistent, but it becomes far more effective as you stack upgrades.
+An unshielded hit costs one life and resets weapon upgrades to the base forward shot. These reset:
 
-### Rapid Fire
+- Rapid Fire and temporary Multi-Shot
+- Spread Fire and Piercing Rounds
+- Auto-Fire and Vector Thrusters
+- Orbital Cannon and its stacks
+- Chain Lightning and Homing Rounds
 
-- Collecting rapid fire boosts stacks the firing rate.
-- Higher stacks increase the weapon tempo significantly.
-- This is the fastest way to melt enemies, but it brings a strong risk: overheating.
+Mobility, pickup range, extra hull lives, combo improvements, and score bonuses remain active.
 
-### Overheat system
+### Heat
 
-- Rapid fire has a heat meter.
-- If you keep firing too hard, heat climbs.
-- When heat reaches critical levels, the ship overheats and takes damage.
-- This creates a tradeoff: more firepower is great, but sustained sprays can burn you out.
+Rapid Fire can stack into high heat. Critical heat causes damage and follows the same unshielded weapon-reset rule.
 
-### Multi-shot / spread fire
+## Donut Pickups
 
-- Multi-shot increases the number of projectiles fired per burst.
-- The spread grows wider as your shot count rises.
-- This is ideal for crowd control and for dealing with packs of enemies.
+The former gem pickups are transparent 3D donut assets. Their image files are in [assets/](assets/); their pickup mechanics are unchanged.
 
-### Piercing rounds
+| Donut | Effect |
+| --- | --- |
+| Matcha | Salvage score collectible |
+| Cinnamon | Rapid Fire stack |
+| Vanilla | Shield charges |
+| Strawberry | 1UP |
+| Blueberry | Temporary Multi-Shot |
 
-- Piercing shots can pass through multiple enemies.
-- Great for large formations or boss patterns.
-- Best paired with dense waves where enemies are in a line or cluster.
+All donut glows use `drop-shadow`, so the glow follows the transparent donut silhouette rather than drawing a square around the item.
 
-### Auto-fire
+## Perks and Weapons
 
-- Auto-fire is unlocked as a perk progression option.
-- Once enabled, it fires continuously until toggled off.
-- Because it can trigger overheating, the player must manage it carefully.
-- This weapon mode is very efficient when timed correctly but dangerous if left on too long.
+After each cleared wave, the player chooses a permanent perk from the available pool.
 
-### Orbital Cannon
+| Perk | Effect |
+| --- | --- |
+| Rapid Fire | Improves base fire rate |
+| Spread Fire | Adds forward shots, up to four |
+| Piercing Rounds | Lets shots pass through more enemies |
+| Thruster Boost | Increases movement speed |
+| Salvage Magnet | Increases pickup radius |
+| Reinforced Hull | Adds one life |
+| Combo Mastery | Raises combo cap and combo window |
+| Score Surge | Increases all points earned |
+| Auto-Fire | Enables trigger-controlled continuous firing |
+| Vector Thrusters | Fires in the movement direction |
+| Orbital Cannon | Replaces the current weapon set with rotating fire |
+| Chain Lightning | A kill arcs to a nearby enemy |
+| Homing Rounds | Shots curve toward nearby enemies |
 
-- Adds orbiting shots that spin around the ship.
-- Strong defensive value for close-range boss fights and incoming swarm patterns.
-- It provides layered coverage without requiring direct aim every moment.
+Orbital Cannon is a weapon swap. Its first selection clears other weapons and starts one rotating stream. Later Orbital Cannon selections add streams, up to four.
 
-### Chain Lightning
+## Waves and Bosses
 
-- Creates a chain effect that bounces between nearby enemies.
-- Good for clearing clusters and boss weak points.
-- Helps when enemies are tightly packed.
+Enemy speed, spawn pressure, and wave quotas increase over time. Standard boss patterns include splitter, tracking, drone, gravity, meteor, and arc attacks. Later waves can spawn stronger elite versions.
 
-### Homing Rounds
+### Wave 3: Boba Colossus
 
-- Some shots will seek nearby enemies automatically.
-- Improves accuracy during quick movement or against evasive targets.
-- Especially strong against alien and drone boss patterns.
+Wave 3 features the Boba Colossus, a large, fast, angry boba-tea boss with a straw. It fires three boba pearls in a fan volley. The pearls are enemy bullets and damage the player on contact.
 
-### Directional Fire
+When defeated, the Boba Colossus spills harmless tea droplets and boba pearls. The effect remains visible through the perk screen, safe intermission, and next-wave countdown, then fades as the next wave starts.
 
-- Allows shots to align with movement direction.
-- Great for strafing and staying mobile while firing.
-- Encourages an aggressive but controlled movement pattern.
+### Safe Intermission
 
----
+After a perk is selected, the player flies briefly without hostile spawns. Harmless local debris such as spacecraft parts, a rocket, phone, radio, robot, and satellite can float through the arena. These never cause damage.
 
-## Powerups and Pickups
+## Scoring
 
-### Rapid Fire boost
+Points come from enemy kills, bosses, salvage, near misses, and wave bonuses.
 
-- Increases firing speed.
-- Stacks multiple times.
-- Displays as a floating text bonus.
+- **Combo:** quick consecutive kills increase the combo multiplier.
+- **Near miss:** narrowly avoiding a non-boss enemy awards a bonus.
+- **No-hit clear:** a damage-free wave earns a streak-based bonus.
+- **Score Surge:** increases all points earned.
 
-### Multi-shot pickup
+Score, wave, and near-miss multipliers are bounded in the client to prevent invalid states from producing unrealistic values.
 
-- Adds more projectiles and spread.
-- The weapon becomes wider and stronger.
-- Multi-shot is stackable and can be timed with rapid-fire upgrades for heavy damage output.
+## Shared Leaderboard
 
-### Shield
+The standard leaderboard is server-authoritative. It does not use browser score storage as a fallback.
 
-- Grants a protective shield for several hits.
-- Useful for boss phases and sudden enemy bursts.
-- Makes the ship more forgiving in high-pressure moments.
+1. A qualifying top-three score asks for up to three initials.
+2. The client posts `initials`, `score`, and `wave` to `api/highscore.php`.
+3. The endpoint stores the top three entries in `api/leaderboard.json`.
+4. The page displays the shared top-three pilots with initials, score, and wave reached.
 
-### 1UP
+## Rival Contract
 
-- Gives an extra life.
-- Essential after difficult waves or boss fights.
+Rival Contract is a short request/accept 1v1-style challenge built for ordinary PHP website hosting. It needs no WebSockets or persistent server process.
 
-### Salvage Magnet
+### How Queueing Works
 
-- Pulls nearby collectibles and powerups toward your ship.
-- Helps preserve position and smooths survival during intense pressure.
+1. Player One chooses **Rival Contract**, enters initials, and sees **Request Contract** when no request is waiting.
+2. Player One selects it. `api/duel-queue.php` creates a pending request that lives for 60 seconds.
+3. Player Two opens Rival Contract during that window. The queue returns Player One's initials and shows **Accept Contract**.
+4. Player Two accepts. The API creates a short-lived match record and clears the pending request.
+5. Player One polls their request ID and sees **Opponent Joined**.
+6. Both players see the matchup intro, for example `AAA VS BBB`, followed by the normal `3, 2, 1, GO!` countdown.
+7. If no one accepts within 60 seconds, the request is cancelled and Player One sees `NO OPPONENT JOINED. TRY AGAIN.`
 
-### Collectibles
+While the queue modal is open, the demo arena freezes and the live Wave/HUD display is hidden. Queueing does not start single-player mode.
 
-- Picking up floating salvage gives score and supports the support loop of the run.
-- You can often keep the ship alive longer by tracking nearby pickups.
+### Contract Play and Result Storage
 
----
+A Rival Contract has a Wave 3 target. The client records a score checkpoint every second and submits the completed result to `api/duel.php` when the player loses or clears Wave 3. That endpoint validates basic input and retains the latest 50 daily results in `api/duels.json`.
 
-## Waves and Boss Mechanics
+The current mode provides request/accept matchmaking, intro presentation, and result recording. Deterministic shared enemy spawns and a live synchronized opponent score feed are separate future enhancements; the UI intentionally does not present Rival Contract as live WebSocket multiplayer.
 
-### Wave progression
+## PHP API Reference
 
-- The game advances through waves.
-- The player must clear a set number of enemies before the next wave begins.
-- Each wave gets harder with faster movement, stronger enemy behavior, and higher pressure.
+All client requests are relative to the game file. If the game is installed at `/bstudio/`, requests resolve under `/bstudio/api/`.
 
-### Boss wave behavior
+### `api/highscore.php`
 
-- A major boss appears when the wave clears its normal enemy threshold.
-- The boss remains active until defeated.
-- Defeating the boss completes the wave transition.
+| Method | Purpose |
+| --- | --- |
+| `GET` | Returns the global high score and top-three leaderboard |
+| `POST` | Accepts initials, score, and wave for a leaderboard entry |
 
-### Boss variety
+### `api/duel-queue.php`
 
-The game includes a roster of multiple unique bosses, each with different styles and attack patterns. They range from asteroid commanders, alien motherships, drone swarms, and black-hole entities to elite late-game monsters.
+| Method | Purpose |
+| --- | --- |
+| `GET` | Returns the daily contract and any pending request |
+| `GET ?requestId=<id>` | Lets Player One poll for the accepted match |
+| `POST request` | Creates a pending request with Player One's initials |
+| `POST accept` | Lets Player Two accept the request and create a match |
+| `POST cancel` | Removes Player One's pending request |
 
-Boss types include:
-- asteroid-based splitters
-- alien tracking craft
-- drone swarm controllers
-- gravity black hole enemies
-- meteor storm bosses
-- arc and spread projectile bosses
-- elite late-game monsters with higher speed, health, and damage
+### `api/duel.php`
 
-### Boss archetypes
+| Method | Purpose |
+| --- | --- |
+| `GET` | Returns the latest completed result for the current daily contract |
+| `POST` | Stores a completed contract's initials, score, wave, and score timeline |
 
-- Splitter bosses: create wide radial shots and break apart into a hazard pattern.
-- Tracking bosses: fire targeted shots at the player.
-- Drone bosses: spawn additional smaller enemies.
-- Gravity bosses: pull the player inward and control space around them.
-- Meteor bosses: launch high-pressure attacks from above or across the arena.
-- Elite bosses: appear in later waves and are much more punishing, with stronger stats and more dangerous patterns.
+All API writes use exclusive file locks to reduce JSON corruption under simultaneous requests.
 
-### Wave announcements
+## Asset Guide
 
-At the beginning of each wave, the game announces the wave number and, in boss phases, the boss name. This helps the player recognize the increasing threat level and prepare for the upcoming fight.
+Keep file names and paths stable when replacing art:
 
----
+- `player-ship-tier-1.png` through `player-ship-tier-6.png`: player ship progression.
+- `boba-tea-boss.svg`: Wave 3 boss art.
+- `donut-*.png`: flavor-coded pickups.
+- `junk-*.png`: intermission debris.
 
-## Perks and Upgrades
-
-After each cleared wave, players choose from a perk pool. These are permanent upgrades that shape the rest of the run.
-
-### Common perk categories
-
-- Rapid fire improvements
-- Spread fire improvements
-- More projectile damage or piercing
-- Speed or mobility boosts
-- Pickup magnet improvements
-- Shield durability and defense improvements
-- Score and combo multipliers
-- Auto-fire unlocks and weapon bonuses
-- Chain lightning and homing rounds
-
-### Why perks matter
-
-Perks are what turn a good survival run into a strong score run. The right combination lets the player sustain a longer wave progression and take on later bosses more confidently.
-
----
-
-## Combos and Scoring
-
-### Combo system
-
-The combo counter increases when you chain kills quickly. It is an important scoring mechanic because it multiplies points earned during a run.
-
-To build combos:
-- eliminate enemies rapidly
-- keep your timing tight
-- avoid large gaps between kills
-- use spread or piercing weapons to take down clustered enemies quickly
-
-### Near-miss bonus
-
-If you narrowly avoid an enemy or pass close to it, you can get a near-miss bonus. This helps players who are dodging aggressively instead of simply hiding behind a corner.
-
-### No-hit clear bonus
-
-If you finish a wave without taking damage, you earn a clean-wave bonus. This reward can be significant, especially on tougher waves.
-
-### Score tips
-
-- prioritize clearing enemies in groups and maintaining your combo
-- take a wave bonus by staying clean
-- use shield and mobility perks for mid-wave survival
-- late boss kills provide the highest payout
-
----
-
-## Boss Names and Elite Tiers
-
-The game now includes a dramatic boss roster with memorable names and a late-game elite tier.
-
-Examples of boss naming style:
-- The Obsidian Maw
-- The Pale Choir
-- The Dread Hive
-- The Black Singularity
-- Rift Titan Ascendant
-- Specter Prime
-- Arcanum Wraith
-
-Late-game elite enemies get stronger versions with:
-- larger body size
-- more health
-- faster movement
-- harsher projectile patterns
-- bigger score rewards
-- brighter glow and stronger visual identity
-
-These elite bosses are intended to feel like “apex threat” encounters near the end of a run.
-
----
-
-## Tips for Better Runs
-
-- Save your shield for boss phases or dense enemy clusters.
-- Don’t spam rapid fire endlessly; overheating can end a run.
-- Use multi-shot and spread for crowd control.
-- Build combo chains by killing quickly without hesitation.
-- Keep moving; stationary play becomes vulnerable to bosses and swarm patterns.
-- Prioritize wave-clear bonuses and wave bonuses when possible.
-- At the start of later waves, expect the enemy patterns to intensify quickly.
-
----
-
-## Leaderboard and Persistence
-
-- High scores are stored locally in the browser via `localStorage`.
-- If a server endpoint is available, the game can also sync global score data.
-- The leaderboards display score plus the wave reached.
-
----
-
-## File Structure
-
-- [404.shtml](404.shtml) — full game and deployment file
-- [README.md](README.md) — project documentation
-- [dist/](dist/) — generated build artifact if present
-- [node_modules/](node_modules/) — development dependencies only
-
----
-
-## Credits
-
-Built as a custom game experience for a website’s 404 page and expanded into a full arcade shooter.
-
----
+Use transparent PNG or SVG files. Avoid opaque rectangular backgrounds to prevent square artifacts around objects and glows.
 
 ## License
 
-MIT
-
-**Last Updated:** 2026-08-28
+Project code is MIT licensed. Bundled and replacement artwork remains subject to its source license; Kenney assets are CC0.
