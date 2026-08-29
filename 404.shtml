@@ -121,14 +121,35 @@
             100% { transform: translateY(600px); }
         }
 
+        .space-junk {
+          position: absolute;
+          width: 28px;
+          height: 28px;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-size: contain;
+          filter: drop-shadow(0 0 5px rgba(155, 206, 255, 0.35));
+          opacity: 0.75;
+          pointer-events: none;
+          animation: driftSpaceJunk linear infinite;
+        }
+
+        @keyframes driftSpaceJunk {
+          from { transform: translate(0, 0) rotate(0deg); }
+          to { transform: translate(34px, 58px) rotate(280deg); }
+        }
+
         .player {
             position: absolute;
-            width: 25px;
-            height: 25px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpolygon points='32,3 47,55 32,45 17,55' fill='%23cd7f32' stroke='%231a1a1a' stroke-width='2.5'/%3E%3Cpolygon points='32,3 38,42 32,36 26,42' fill='%23e6a05c'/%3E%3Crect x='26' y='30' width='12' height='18' rx='4' fill='%231a1a1a'/%3E%3Ccircle cx='32' cy='26' r='6' fill='%232a2a2a' stroke='%23cd7f32' stroke-width='2'/%3E%3Cpolygon points='17,55 7,61 20,49' fill='%231a1a1a' stroke='%23cd7f32' stroke-width='1.5'/%3E%3Cpolygon points='47,55 57,61 44,49' fill='%231a1a1a' stroke='%23cd7f32' stroke-width='1.5'/%3E%3C/svg%3E");
+          width: 25px;
+          height: 25px;
+            background: transparent;
+            background-image: url("assets/player-ship-tier-1.png");
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
+            border: none;
+            outline: none;
             filter: drop-shadow(0 0 8px rgba(205, 127, 50, 0.9)) drop-shadow(0 0 4px rgba(0, 0, 0, 0.7));
             transition: none;
             will-change: left, top;
@@ -151,9 +172,11 @@
             opacity: 0;
             transition: opacity 0.2s ease;
             pointer-events: none;
+            display: none;
         }
 
         .player.shield .shield-ring {
+            display: block;
             opacity: 1;
             animation: shieldPulse 1s ease-in-out infinite;
         }
@@ -981,13 +1004,13 @@
 
         .mouse-trail {
             position: absolute;
-            width: 4px;
-            height: 4px;
+          width: 2px;
+          height: 2px;
             background: #00f5ff;
             border-radius: 50%;
             pointer-events: none;
-            opacity: 0.6;
-            animation: trailFade 0.5s ease-out forwards;
+          opacity: 0.45;
+          animation: trailFade 0.18s ease-out forwards;
         }
 
         .dvd-logo {
@@ -1493,19 +1516,24 @@
     constructor() {
       this.arena = document.getElementById("gameArena");
       this.player = document.getElementById("player");
+      this.wave = 1;
       this.applyShipAppearance();
       this.gameRunning = false;
       this.score = 0;
       this.lives = 3;
-      this.wave = 1;
       this.comboMultiplier = 1;
       this.lastEnemyKillTime = 0;
       this.comboTimeout = 3e3;
       this.comboResetTimer = null;
       this.highScore = 0;
+      this.leaderboard = [];
       this.loadHighScore().then((score) => {
         this.highScore = score;
         this.updateUI();
+        this.renderLeaderboard("startLeaderboardList");
+      });
+      this.loadGlobalLeaderboard().then((entries) => {
+        if (entries.length) this.mergeLeaderboard(entries);
         this.renderLeaderboard("startLeaderboardList");
       });
       this.enemiesKilled = 0;
@@ -1858,6 +1886,7 @@
       });
       this.arena.addEventListener("pointermove", (e) => {
         this.handleMouseMove(e);
+        this.createMouseTrail(e.clientX, e.clientY);
       });
       this.arena.addEventListener("click", (e) => {
         e.preventDefault();
@@ -1865,7 +1894,6 @@
       });
       document.addEventListener("pointermove", (e) => {
         this.handleMouseMove(e);
-        this.createMouseTrail(e.clientX, e.clientY);
       });
       document.addEventListener("keydown", (e) => {
         if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) {
@@ -1952,6 +1980,9 @@
       this.waveClearStreak = 0;
       this.waveTookDamage = false;
       this.waveBossActive = false;
+      this.bossDefeatCountdownActive = false;
+      this.bossDefeated = false;
+      this.intermissionActive = false;
       this.replayFrames = [];
       this.replayFrame = 0;
       this.replayRecording = !this.demoMode;
@@ -2138,19 +2169,24 @@
       el.classList.add("pulse");
       setTimeout(tick, 700);
     }
-    // ---- Leaderboard (local top 5) ----
+    runBossDefeatCountdown() {
+      if (this.bossDefeatCountdownActive) return;
+      this.bossDefeatCountdownActive = true;
+      this.bossDefeated = true;
+      this.stopBossTheme();
+      this.runCountdown(() => {
+        if (!this.gameRunning) return;
+        this.bossDefeatCountdownActive = false;
+        this.waveBossActive = false;
+        this.nextWave();
+      });
+    }
+    // ---- Server-authoritative leaderboard ----
     loadLeaderboard() {
-      try {
-        return JSON.parse(localStorage.getItem("spaceEscapeLeaderboard")) || [];
-      } catch (e) {
-        return [];
-      }
+      return this.leaderboard || [];
     }
     saveLeaderboardList(list) {
-      try {
-        localStorage.setItem("spaceEscapeLeaderboard", JSON.stringify(list));
-      } catch (e) {
-      }
+      this.leaderboard = list;
     }
     qualifiesForLeaderboard(score) {
       const list = this.loadLeaderboard();
@@ -2158,14 +2194,60 @@
       return score > Math.min(...list.map((e) => e.score));
     }
     addToLeaderboard(initials, score, wave = this.wave) {
-      const list = this.loadLeaderboard();
       const id = Date.now() + Math.random();
-      list.push({ initials: initials.toUpperCase().slice(0, 3) || "AAA", score, wave: Number(wave) || 1, id });
-      list.sort((a, b) => b.score - a.score);
-      const trimmed = list.slice(0, 3);
-      this.saveLeaderboardList(trimmed);
+      const entry = { initials: initials.toUpperCase().slice(0, 3) || "AAA", score, wave: Number(wave) || 1, id };
       this.lastAddedId = id;
-      return trimmed;
+      return this.saveGlobalLeaderboardEntry(entry).then((entries) => {
+        this.mergeLeaderboard(entries);
+        this.renderLeaderboard("startLeaderboardList");
+        return this.loadLeaderboard();
+      });
+    }
+    normalizeLeaderboard(entries) {
+      if (!Array.isArray(entries)) return [];
+      return entries.filter((entry) => entry && Number.isFinite(Number(entry.score))).map((entry) => ({
+        initials: String(entry.initials || "AAA").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3) || "AAA",
+        score: Math.max(0, Math.round(Number(entry.score))),
+        wave: Math.max(1, Math.round(Number(entry.wave) || 1)),
+        id: entry.id || `${entry.initials}-${entry.score}-${entry.wave}`
+      }));
+    }
+    mergeLeaderboard(entries) {
+      const normalizedEntries = this.normalizeLeaderboard(entries);
+      normalizedEntries.sort((a, b) => b.score - a.score);
+      this.saveLeaderboardList(normalizedEntries.slice(0, 3));
+    }
+    async loadGlobalLeaderboard() {
+      try {
+        const response = await fetch("api/highscore.php");
+        if (!response.ok) return [];
+        const data = await response.json();
+        return this.normalizeLeaderboard(data.leaderboard || data.entries);
+      } catch (e) {
+        return [];
+      }
+    }
+    async saveGlobalLeaderboardEntry(entry) {
+      try {
+        const response = await fetch("api/highscore.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            initials: entry.initials,
+            score: entry.score,
+            wave: entry.wave,
+            highScore: entry.score,
+            timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+            version: "BSTUDIO_v1.0"
+          })
+        });
+        if (!response.ok) return [];
+        const data = await response.json().catch(() => ({}));
+        const entries = this.normalizeLeaderboard(data.leaderboard || data.entries);
+        return entries.length ? entries : await this.loadGlobalLeaderboard();
+      } catch (e) {
+        return [];
+      }
     }
     renderLeaderboard(elementId) {
       const el = document.getElementById(elementId);
@@ -2226,6 +2308,9 @@
       }
     }
     createMouseTrail(x, y) {
+      const now = Date.now();
+      if (this.lastMouseTrailAt && now - this.lastMouseTrailAt < 70) return;
+      this.lastMouseTrailAt = now;
       const trail = document.createElement("div");
       trail.className = "mouse-trail";
       trail.style.left = x + "px";
@@ -2237,7 +2322,7 @@
         if (trail.parentNode) {
           trail.parentNode.removeChild(trail);
         }
-      }, 500);
+      }, 180);
     }
     movePlayer(deltaX, deltaY) {
       const arenaRect = this.arena.getBoundingClientRect();
@@ -2339,21 +2424,11 @@
         }, i * 20);
       }
     }
-    getShipArtwork(theme) {
-      const svg = `
-        <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>
-          <polygon points='32,3 47,55 32,45 17,55' fill='${theme.core}' stroke='${theme.accent}' stroke-width='2.5'/>
-          <polygon points='32,3 38,42 32,36 26,42' fill='${theme.glow}'/>
-          <rect x='26' y='30' width='12' height='18' rx='4' fill='${theme.accent}'/>
-          <circle cx='32' cy='26' r='6' fill='${theme.accent}' stroke='${theme.core}' stroke-width='2'/>
-          <polygon points='17,55 7,61 20,49' fill='${theme.accent}' stroke='${theme.core}' stroke-width='1.5'/>
-          <polygon points='47,55 57,61 44,49' fill='${theme.accent}' stroke='${theme.core}' stroke-width='1.5'/>
-          <path d='M24 47H40' stroke='${theme.glow}' stroke-width='2.5' stroke-linecap='round' opacity='0.9'/>
-        </svg>`;
-      return `url("data:image/svg+xml,${encodeURIComponent(svg).replace(/'/g, "%27")}")`;
+    getShipArtwork(tier) {
+      return `url("assets/player-ship-tier-${tier}.png")`;
     }
     applyShipAppearance() {
-      const tier = Math.min(6, Math.max(1, 1 + Math.floor((this.wave - 1) / 2)));
+      const tier = Math.min(6, Math.max(1, this.wave));
       const palettes = [
         { core: "#cd7f32", glow: "#e6a05c", accent: "#1a1a1a", engine: "#7ae9ff", engineGlow: "rgba(122, 233, 255, 0.8)" },
         { core: "#39d1ff", glow: "#baf2ff", accent: "#102a3c", engine: "#8ef7ff", engineGlow: "rgba(142, 247, 255, 0.8)" },
@@ -2363,10 +2438,10 @@
         { core: "#ff6b9a", glow: "#ffd0e1", accent: "#3c1124", engine: "#ff99c5", engineGlow: "rgba(255, 153, 197, 0.8)" }
       ];
       const palette = palettes[tier - 1];
-      this.player.style.backgroundImage = this.getShipArtwork(palette);
+      this.player.style.backgroundImage = this.getShipArtwork(tier);
       this.player.style.width = `${25 + (tier - 1) * 2}px`;
       this.player.style.height = `${25 + (tier - 1) * 2}px`;
-      this.player.style.boxShadow = `0 0 ${10 + tier * 4}px ${palette.glow}66`;
+      this.player.style.boxShadow = "none";
       const flame = this.player.querySelector(".engine-flame");
       if (flame) {
         flame.style.background = `linear-gradient(to bottom, ${palette.engine}, ${palette.engineGlow} 55%, rgba(0, 0, 0, 0))`;
@@ -2409,6 +2484,7 @@
           vy: -Math.cos(rad) * 8,
           pierce: 1 + this.pierceLevel,
           homing: this.homingShots,
+          source: "player",
           element: this.createElement("projectile")
         };
         this.updateElementPosition(projectile);
@@ -2457,6 +2533,7 @@
         vy: 0,
         pierce: 1,
         homing,
+        source: "enemy",
         bossColor: color,
         element: this.createElement("projectile")
       };
@@ -2536,6 +2613,7 @@
               vy: Math.sin(angle) * 3.4,
               pierce: 1,
               homing: false,
+              source: "enemy",
               element: this.createElement("projectile")
             };
             projectile.element.style.background = "#ff8ab0";
@@ -2558,6 +2636,7 @@
               vy: Math.sin(angle) * 3.9,
               pierce: 1,
               homing: false,
+              source: "enemy",
               element: this.createElement("projectile")
             };
             projectile.element.style.background = "#fff58a";
@@ -2586,6 +2665,7 @@
               vy: Math.sin(angle) * 3.5,
               pierce: 1,
               homing: false,
+              source: "enemy",
               element: this.createElement("projectile")
             };
             projectile.element.style.background = "#ff8ab0";
@@ -2605,10 +2685,12 @@
           this.updateBossBehavior(enemy);
         }
       });
-      this.enemySpawnTimer++;
-      if (this.enemySpawnTimer > this.enemySpawnRate) {
-        this.spawnEnemy();
-        this.enemySpawnTimer = 0;
+      if (!this.intermissionActive) {
+        this.enemySpawnTimer++;
+        if (this.enemySpawnTimer > this.enemySpawnRate) {
+          this.spawnEnemy();
+          this.enemySpawnTimer = 0;
+        }
       }
       this.collectibleSpawnTimer++;
       if (this.collectibleSpawnTimer > this.collectibleSpawnRate && this.collectibles.length < 2) {
@@ -2657,7 +2739,7 @@
           const nearMissRadius = collisionRadius + 22;
           if (distance > 0 && distance < nearMissRadius && distance >= collisionRadius) {
             enemy.nearMissAwarded = true;
-            const bonus = 25 * this.waveMultiplier;
+            const bonus = Math.round(25 * Math.min(4, Math.max(1, Number(this.waveMultiplier) || 1)));
             this.addScore(bonus);
             this.showFloatingText(enemy.x, enemy.y, `NEAR MISS +${bonus}`, "#00f5ff");
           }
@@ -2807,11 +2889,8 @@
             this.takeDamage();
           }
           if (enemy.type === "boss") {
-            this.addScore(enemy.points * this.waveMultiplier);
-            this.enemiesKilled++;
-            this.splitBossAsteroid(enemy.x, enemy.y);
             this.screenShake();
-            this.checkWaveProgression();
+            return;
           }
           this.removeEnemy(enemyIndex);
           this.createSound("damage", enemy.x);
@@ -2820,6 +2899,7 @@
         }
       });
       for (let projIndex = this.projectiles.length - 1; projIndex >= 0; projIndex--) {
+        if (this.projectiles[projIndex]?.source !== "player") continue;
         for (let enemyIndex = this.enemies.length - 1; enemyIndex >= 0; enemyIndex--) {
           if (this.projectiles[projIndex] && this.enemies[enemyIndex] && this.isColliding(this.projectiles[projIndex], this.enemies[enemyIndex], 6, this.enemies[enemyIndex].size)) {
             this.enemies[enemyIndex].health--;
@@ -2833,14 +2913,18 @@
               this.updateCombo();
               this.createExplosionParticles(this.enemies[enemyIndex].x, this.enemies[enemyIndex].y);
               this.createSound("enemyHit", this.enemies[enemyIndex].x);
-              if (this.enemies[enemyIndex].type === "boss") {
-                this.splitBossAsteroid(this.enemies[enemyIndex].x, this.enemies[enemyIndex].y);
-                this.screenShake();
-              }
               const killedEnemy = this.enemies[enemyIndex];
-              this.removeEnemy(enemyIndex);
-              if (this.chainLightning) this.triggerChainLightning(killedEnemy.x, killedEnemy.y);
-              this.checkWaveProgression();
+              if (killedEnemy.type === "boss") {
+                this.splitBossAsteroid(killedEnemy.x, killedEnemy.y);
+                this.screenShake();
+                this.removeEnemy(enemyIndex);
+                if (this.chainLightning) this.triggerChainLightning(killedEnemy.x, killedEnemy.y);
+                this.runBossDefeatCountdown();
+              } else {
+                this.removeEnemy(enemyIndex);
+                if (this.chainLightning) this.triggerChainLightning(killedEnemy.x, killedEnemy.y);
+                this.checkWaveProgression();
+              }
             }
             this.projectiles[projIndex].pierce--;
             if (this.projectiles[projIndex].pierce <= 0) {
@@ -2904,7 +2988,13 @@
       this.addScore(target.points * this.waveMultiplier * this.comboMultiplier * 0.5);
       this.enemiesKilled++;
       this.removeEnemy(targetIndex);
-      this.checkWaveProgression();
+      if (target.type === "boss") {
+        this.splitBossAsteroid(target.x, target.y);
+        this.screenShake();
+        this.runBossDefeatCountdown();
+      } else {
+        this.checkWaveProgression();
+      }
     }
     activatePowerup(type, x = this.playerPos.x, y = this.playerPos.y) {
       if (type === "shoot") {
@@ -2973,13 +3063,11 @@
       }
     }
     checkWaveProgression() {
+      if (this.bossDefeatCountdownActive || this.intermissionActive) return;
       if (this.waveBossActive) {
         const bossAlive = this.enemies.some((enemy) => enemy.type === "boss");
         if (!bossAlive) {
-          this.waveBossActive = false;
-          this.stopBossTheme();
-          this.nextWave();
-          this.playAmbientLoop();
+          this.spawnBossAsteroid();
         }
         return;
       }
@@ -3005,14 +3093,13 @@
       const clearBonus = !this.waveTookDamage;
       if (clearBonus) this.waveClearStreak++;
       else this.waveClearStreak = 0;
-      this.wave++;
+      this.wave = Math.min(99, Math.max(1, Number(this.wave) || 1) + 1);
       this.enemiesKilled = 0;
       this.waveMultiplier = 1 + this.wave * 0.35;
       this.enemySpawnRate = Math.max(90, this.enemySpawnRate - 28 - this.wave * 2);
       this.enemiesPerWave = 8 + this.wave * 3;
       this.waveBossActive = false;
       this.applyShipAppearance();
-      this.showWaveNotification();
       const bonusMultiplier = clearBonus ? 1 + this.waveClearStreak * 0.5 : 1;
       const clearBonusPoints = Math.round(500 * this.wave * this.comboMultiplier * bonusMultiplier);
       this.addScore(clearBonusPoints);
@@ -3326,6 +3413,40 @@
       document.getElementById("perkModal").classList.remove("show");
       this.perkChoicePending = false;
       this.updateUI();
+      this.startIntermission();
+    }
+    startIntermission() {
+      this.intermissionActive = true;
+      this.enemySpawnTimer = 0;
+      const junkAssets = [
+        "junk-phone-frame.png",
+        "junk-radio.png",
+        "junk-robot-frame.png",
+        "junk-rocket.png",
+        "junk-satellite-frame.png"
+      ];
+      for (let index = 0; index < 7; index++) {
+        const junk = document.createElement("div");
+        junk.className = "space-junk";
+        junk.style.left = `${10 + Math.random() * 80}%`;
+        junk.style.top = `${10 + Math.random() * 75}%`;
+        junk.style.backgroundImage = `url("assets/${junkAssets[Math.floor(Math.random() * junkAssets.length)]}")`;
+        const size = 20 + Math.random() * 16;
+        junk.style.width = `${size}px`;
+        junk.style.height = `${size}px`;
+        junk.style.animationDelay = `${Math.random() * -4}s`;
+        junk.style.animationDuration = `${5 + Math.random() * 4}s`;
+        this.arena.appendChild(junk);
+        setTimeout(() => junk.remove(), 6200);
+      }
+      setTimeout(() => {
+        if (!this.gameRunning || !this.intermissionActive) return;
+        this.runCountdown(() => {
+          if (!this.gameRunning) return;
+          this.intermissionActive = false;
+          this.showWaveNotification();
+        });
+      }, 2200);
     }
     showWaveNotification(bossLabel = null) {
       const notification = document.createElement("div");
@@ -3358,22 +3479,11 @@
       }, displayTime);
     }
     loadHighScore() {
-      return new Promise((resolve) => {
-        try {
-          const localScore = parseInt(localStorage.getItem("spaceEscapeHighScore")) || 0;
-          this.loadGlobalHighScore().then((globalScore) => {
-            resolve(Math.max(globalScore, localScore));
-          }).catch(() => {
-            resolve(localScore);
-          });
-        } catch (e) {
-          resolve(0);
-        }
-      });
+      return this.loadGlobalHighScore();
     }
     async loadGlobalHighScore() {
       try {
-        const response = await fetch("/api/highscore.json");
+        const response = await fetch("api/highscore.php");
         if (response.ok) {
           const data = await response.json();
           return data.highScore || 0;
@@ -3384,7 +3494,7 @@
     }
     async saveGlobalHighScore(score) {
       try {
-        const response = await fetch("/api/highscore.json", {
+        const response = await fetch("api/highscore.php", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -3400,20 +3510,13 @@
         }
         return true;
       } catch (e) {
-        console.warn("Failed to save high score to server, using localStorage");
-        try {
-          localStorage.setItem("spaceEscapeHighScore", score.toString());
-          return true;
-        } catch (localError) {
-          console.warn("Failed to save high score to localStorage");
-          return false;
-        }
+        console.warn("Failed to save high score to server");
+        return false;
       }
     }
     async saveHighScore() {
       if (this.score > this.highScore) {
         this.highScore = this.score;
-        await this.saveGlobalHighScore(this.score);
         return true;
       }
       return false;
@@ -3425,10 +3528,11 @@
       this.createSound("easterEgg");
     }
     addScore(points) {
-      this.score += Math.round(points * this.scoreMultiplierPerk);
+      const basePoints = Math.max(0, Math.min(1e6, Number(points) || 0));
+      const scoreMultiplier = Math.min(2.25, Math.max(1, Number(this.scoreMultiplierPerk) || 1));
+      this.score = Math.min(Number.MAX_SAFE_INTEGER, this.score + Math.round(basePoints * scoreMultiplier));
       if (this.score > this.highScore) {
         this.highScore = this.score;
-        this.saveGlobalHighScore(this.score);
       }
     }
     removeEnemy(index) {
@@ -3613,11 +3717,11 @@
     if (e) e.stopPropagation();
     if (game) game.toggleMute();
   }
-  function submitInitials() {
+  async function submitInitials() {
     const input = document.getElementById("initialsInput");
     const initials = (input.value || "AAA").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3) || "AAA";
     if (game) {
-      game.addToLeaderboard(initials, game.score, game.wave);
+      await game.addToLeaderboard(initials, game.score, game.wave);
       document.getElementById("initialsModal").classList.remove("show");
       if (game.pendingShowAfterInitials) {
         game.pendingShowAfterInitials();
