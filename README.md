@@ -4,7 +4,7 @@ A self-contained, single-file arcade shooter built as a custom 404 error page fo
 
 ## Play
 
-Open `index.html` in any browser. No build step, no dependencies — pure HTML/CSS/JS.
+Open `404.shtml` directly in a browser, or configure your server/CDN to use it as the 404 error page. No build step, dependencies, or external JavaScript files are required.
 
 ## Features
 
@@ -16,10 +16,15 @@ Open `index.html` in any browser. No build step, no dependencies — pure HTML/C
 - Attract/demo mode: self-playing AI runs when no one's playing, showing the leaderboard and top score
 - Pause (P / Esc) and mute (M) controls, screen shake, haptic feedback on mobile, thruster particles, rock-fragment explosions
 - Mobile-friendly: touch drag-to-move, tap-to-shoot, fullscreen on start, responsive layout
+- Compiled game engine embedded directly in the self-contained `404.shtml` deployment file
+- Rapid Fire overheat risk after six stacks, with heat damage if pushed too far
+- Rare Chain Lightning and Homing Rounds perks
+- Growing no-hit wave-clear bonus multiplier
+- Best-run input replay in attract mode, stored locally per browser
 
 ## Deploy
 
-Drop `index.html` in as your site's 404 page (e.g. rename to `404.shtml` or configure your server/CDN to serve it for 404 responses).
+Drop `404.shtml` in as your site's 404 page, or configure your server/CDN to serve it for 404 responses.
 
 ## Credit
 
