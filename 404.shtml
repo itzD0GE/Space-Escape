@@ -17,7 +17,7 @@
             font-family: 'Orbitron', monospace;
             background: #0a0a0f;
             overflow: hidden;
-            cursor: none;
+            cursor: default;
             width: 100vw;
             height: 100vh;
             color: #00f5ff;
@@ -93,9 +93,13 @@
             max-height: 80vh;
             border: 2px solid #00f5ff;
             border-radius: 15px;
-            background: rgba(0, 0, 0, 0.3);
+            background:
+              radial-gradient(circle at 50% 35%, rgba(70, 60, 90, 0.12), transparent 60%),
+              linear-gradient(rgba(2, 2, 6, 0.72), rgba(2, 2, 6, 0.9)),
+              url("assets/nebula-bg.jpg") center / cover no-repeat;
+            background-blend-mode: normal, normal, normal;
             overflow: hidden;
-            cursor: none;
+            cursor: crosshair;
             box-shadow: 0 0 50px rgba(0, 245, 255, 0.3);
             touch-action: none;
         }
@@ -123,8 +127,8 @@
         }
 
         @keyframes starMove {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(600px); }
+            0% { transform: translateY(-40px); }
+            100% { transform: translateY(900px); }
         }
 
         .space-junk {
@@ -150,7 +154,7 @@
           position: absolute;
           pointer-events: none;
           z-index: 310;
-          animation: bobaSpillFloat 9.5s cubic-bezier(0.12, 0.7, 0.25, 1) forwards;
+          animation: bobaPearlPop 0.45s ease-out forwards;
         }
 
         .boba-spill-pearl {
@@ -171,19 +175,15 @@
           box-shadow: 0 0 10px rgba(255, 183, 115, 0.7);
         }
 
-        @keyframes bobaSpillFloat {
-          0% { transform: translate(0, 0) rotate(0deg) scale(0.45); opacity: 0; }
-          12% { opacity: 1; }
-          100% { transform: translate(var(--spill-x), var(--spill-y)) rotate(var(--spill-rotation)) scale(0.95); opacity: 0.92; }
+        @keyframes bobaPearlPop {
+          0% { opacity: 0; transform: scale(0.4); }
+          100% { opacity: 1; transform: scale(1); }
         }
 
         .boba-spill-fade {
-          animation: bobaSpillFade 2.6s ease-out forwards;
-        }
-
-        @keyframes bobaSpillFade {
-          from { opacity: 0.92; filter: blur(0); }
-          to { opacity: 0; filter: blur(2px); }
+          transition: opacity 0.8s ease-out, filter 0.8s ease-out;
+          opacity: 0 !important;
+          filter: blur(2px);
         }
 
         .boba-celebration {
@@ -959,6 +959,42 @@
             animation: collectiblePulse 1.6s ease-in-out infinite;
         }
 
+        .powerup-mochi {
+            position: absolute;
+          width: 22px;
+          height: 22px;
+          background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cellipse cx='32' cy='36' rx='24' ry='20' fill='%23fff5fa' stroke='%23e8b8d0' stroke-width='3'/%3E%3Cellipse cx='24' cy='28' rx='6' ry='4' fill='%23ffffff' opacity='0.8'/%3E%3Ccircle cx='32' cy='36' r='4' fill='%23ffd1e6' opacity='0.6'/%3E%3C/svg%3E") center / contain no-repeat;
+            filter: drop-shadow(0 0 8px #ffb3c6);
+            animation: collectiblePulse 1.6s ease-in-out infinite;
+        }
+
+        .powerup-dango {
+            position: absolute;
+          width: 22px;
+          height: 22px;
+          background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='30' y='10' width='4' height='48' fill='%23c48a4a'/%3E%3Ccircle cx='32' cy='18' r='9' fill='%23ffb3c6' stroke='%23c96f8c' stroke-width='2'/%3E%3Ccircle cx='32' cy='34' r='9' fill='%23fff6e0' stroke='%23d8c79a' stroke-width='2'/%3E%3Ccircle cx='32' cy='50' r='9' fill='%238fd694' stroke='%234f9e58' stroke-width='2'/%3E%3C/svg%3E") center / contain no-repeat;
+            filter: drop-shadow(0 0 8px #ff9fc0);
+            animation: collectiblePulse 1.6s ease-in-out infinite;
+        }
+
+        .powerup-sushi {
+            position: absolute;
+          width: 22px;
+          height: 22px;
+          background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cellipse cx='32' cy='42' rx='22' ry='14' fill='%23fffdf5' stroke='%23e5ddc0' stroke-width='2'/%3E%3Cpath d='M10 34C10 22 20 14 32 14C44 14 54 22 54 34C54 38 50 40 32 40C14 40 10 38 10 34Z' fill='%23ff8a7a' stroke='%23c9463a' stroke-width='2'/%3E%3Crect x='6' y='30' width='8' height='16' fill='%232f4d2f'/%3E%3C/svg%3E") center / contain no-repeat;
+            filter: drop-shadow(0 0 8px #ff8a7a);
+            animation: collectiblePulse 1.6s ease-in-out infinite;
+        }
+
+        .powerup-taiyaki {
+            position: absolute;
+          width: 22px;
+          height: 22px;
+          background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M6 32C16 14 34 10 50 18C58 22 60 32 60 32C60 32 58 42 50 46C34 54 16 50 6 32Z' fill='%23e0a84e' stroke='%238a5a1e' stroke-width='3'/%3E%3Cpath d='M50 18L60 10L58 24Z' fill='%23e0a84e' stroke='%238a5a1e' stroke-width='2'/%3E%3Cpath d='M18 24C24 30 24 38 18 42' stroke='%238a5a1e' stroke-width='2' fill='none'/%3E%3Cpath d='M28 20C34 28 34 38 28 46' stroke='%238a5a1e' stroke-width='2' fill='none'/%3E%3Ccircle cx='44' cy='30' r='2.5' fill='%233a2a10'/%3E%3C/svg%3E") center / contain no-repeat;
+            filter: drop-shadow(0 0 8px #e0a84e);
+            animation: collectiblePulse 1.6s ease-in-out infinite;
+        }
+
         .floating-text {
             position: absolute;
             font-family: 'Orbitron', monospace;
@@ -988,6 +1024,14 @@
             background: #00f5ff;
             border-radius: 50%;
             box-shadow: 0 0 8px #00f5ff;
+        }
+
+        .projectile.player-bolt {
+            width: 5px;
+            height: 20px;
+            border-radius: 3px;
+            background: linear-gradient(to bottom, #ffffff 0%, #a3f7ff 30%, #00c8ff 65%, rgba(0, 140, 255, 0) 100%);
+            box-shadow: 0 0 6px #a3f7ff, 0 0 16px #00c8ff;
         }
 
         .particle {
@@ -1213,9 +1257,10 @@
             color: white;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
-            opacity: 0.3;
+            opacity: 0.85;
             z-index: 300;
             pointer-events: none;
+            animation: collectiblePulse 0.6s ease-in-out infinite;
         }
 
         @keyframes dvdZoomOut {
@@ -1402,6 +1447,32 @@
             display: block;
             animation: successShow 0.5s ease-out;
         }
+
+        .duel-result {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          z-index: 330;
+          display: none;
+          width: min(380px, 90vw);
+          padding: clamp(18px, 4vw, 30px);
+          transform: translate(-50%, -50%);
+          border: 2px solid #ff2d95;
+          border-radius: 12px;
+          background: rgba(7, 8, 18, 0.96);
+          box-shadow: 0 0 34px rgba(255, 45, 149, 0.48);
+          color: #e8faff;
+          text-align: center;
+        }
+
+        .duel-result.show { display: block; animation: successShow 0.45s ease-out; }
+        .duel-result h2 { color: #ffd166; font-size: clamp(1.2rem, 5vw, 2rem); margin-bottom: 10px; text-shadow: 0 0 16px #ffd166; }
+        .duel-result p { margin: 8px 0; font-size: clamp(0.72rem, 2.5vw, 0.95rem); }
+        .duel-result-score { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; margin: 18px 0; }
+        .duel-result-pilot { font-size: clamp(1rem, 4vw, 1.5rem); font-weight: 900; }
+        .duel-result-you { color: #00f5ff; text-shadow: 0 0 12px #00f5ff; }
+        .duel-result-rival { color: #ff2d95; text-shadow: 0 0 12px #ff2d95; }
+        .duel-result-vs { color: #ffffff; font-size: 0.75rem; }
 
         @keyframes successShow {
             from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
@@ -1712,6 +1783,20 @@
               <button class="game-btn" onclick="goHome()">Continue to Site</button>
             </div>
         </div>
+
+        <div class="duel-result" id="duelResult">
+            <h2 id="duelResultTitle">CONTRACT COMPLETE</h2>
+            <p id="duelResultStatus">RESULT RECORDED</p>
+            <div class="duel-result-score">
+              <div class="duel-result-pilot duel-result-you"><span id="duelResultPlayer">AAA</span><br><span id="duelResultPlayerScore">0</span></div>
+              <div class="duel-result-vs">VS</div>
+              <div class="duel-result-pilot duel-result-rival"><span id="duelResultRival">BBB</span><br><span id="duelResultRivalScore">0</span></div>
+            </div>
+            <div class="result-actions">
+              <button class="game-btn" onclick="restartGame()">PLAY AGAIN</button>
+              <button class="game-btn" onclick="goHome()">RETURN HOME</button>
+            </div>
+        </div>
         
         <div class="controls">
             <p id="controlsText">WASD/Arrow Keys OR Mouse to Move | SPACE or Click to Shoot | Survive as long as possible!</p>
@@ -1732,7 +1817,7 @@
     <script>
 (() => {
   // src/game.ts
-  const GAME_VERSION = "1.5.3";
+  const GAME_VERSION = "1.5.6";
   var SpaceEscapeGame = class {
     constructor() {
       this.arena = document.getElementById("gameArena");
@@ -1754,6 +1839,8 @@
       this.duelScoreTimeline = [];
       this.duelStartedAt = 0;
       this.duelLastTimelineSecond = -1;
+      this.duelMatchId = null;
+      this.duelRole = null;
       this.duelSubmitted = false;
       this.duelCompleted = false;
       this.duelIntroActive = false;
@@ -1822,6 +1909,10 @@
       this.shotCount = 1;
       this.pierceLevel = 0;
       this.pickupRadius = 25;
+      this.rapidOverdriveUntil = 0;
+      this.scoreFrenzyUntil = 0;
+      this.magnetSurgeUntil = 0;
+      this.phaseShieldUntil = 0;
       this.comboCap = 3;
       this.scoreMultiplierPerk = 1;
       this.perkLevels = {};
@@ -1849,15 +1940,20 @@
       this.init();
     }
     createStarfield() {
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < 60; i++) {
         const star = document.createElement("div");
         star.className = "star";
-        star.style.width = `${Math.random() * 2 + 1}px`;
-        star.style.height = star.style.width;
+        const depth = Math.random();
+        const size = 1 + depth * 2.2;
+        const length = size * (1 + depth * 5);
+        star.style.width = `${size}px`;
+        star.style.height = `${length}px`;
         star.style.left = `${Math.random() * 100}%`;
         star.style.top = `${Math.random() * 100}%`;
-        star.style.animationDuration = `${Math.random() * 10 + 5}s`;
-        star.style.animationDelay = `${Math.random() * 5}s`;
+        star.style.opacity = String(0.15 + depth * 0.4);
+        const duration = 7.5 - depth * 5.5;
+        star.style.animationDuration = `${duration}s`;
+        star.style.animationDelay = `${-Math.random() * duration}s`;
         this.arena.appendChild(star);
       }
     }
@@ -1937,148 +2033,73 @@
       this.stopBossTheme();
     }
     createSound(type, xPos = 400) {
+      if (!this.audioCtx || !this.audioUnlocked) return;
       const arenaWidth = this.arena.getBoundingClientRect().width;
       const panValue = (xPos / arenaWidth * 2 - 1) * 0.5;
       const panner = this.audioCtx.createPanner();
       panner.panningModel = "HRTF";
       panner.distanceModel = "inverse";
       panner.setPosition(panValue, 0, 1);
+      panner.connect(this.masterGain);
+      const now = this.audioCtx.currentTime;
+      const tone = (freq, endFreq, duration, oscType, peakVolume, startOffset = 0) => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = oscType;
+        osc.frequency.setValueAtTime(freq, now + startOffset);
+        if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, now + startOffset + duration);
+        gain.gain.setValueAtTime(1e-4, now + startOffset);
+        gain.gain.exponentialRampToValueAtTime(peakVolume, now + startOffset + 0.012);
+        gain.gain.exponentialRampToValueAtTime(1e-4, now + startOffset + duration);
+        osc.connect(gain);
+        gain.connect(panner);
+        osc.start(now + startOffset);
+        osc.stop(now + startOffset + duration + 0.03);
+      };
+      const noiseBurst = (duration, startFreq, endFreq, peakVolume, filterType = "lowpass") => {
+        const bufferSize = Math.max(1, Math.floor(this.audioCtx.sampleRate * duration));
+        const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        const noise = this.audioCtx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.audioCtx.createBiquadFilter();
+        filter.type = filterType;
+        filter.frequency.setValueAtTime(startFreq, now);
+        filter.frequency.exponentialRampToValueAtTime(Math.max(40, endFreq), now + duration);
+        const gain = this.audioCtx.createGain();
+        gain.gain.setValueAtTime(1e-4, now);
+        gain.gain.exponentialRampToValueAtTime(peakVolume, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(1e-4, now + duration);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(panner);
+        noise.start(now);
+        noise.stop(now + duration + 0.02);
+      };
       if (type === "shoot") {
-        const osc1 = this.audioCtx.createOscillator();
-        const osc2 = this.audioCtx.createOscillator();
-        const gain = this.audioCtx.createGain();
-        osc1.type = "square";
-        osc2.type = "sine";
-        osc1.frequency.setValueAtTime(1e3 + Math.random() * 20, this.audioCtx.currentTime);
-        osc1.frequency.exponentialRampToValueAtTime(500, this.audioCtx.currentTime + 0.1);
-        osc2.frequency.setValueAtTime(1050 + Math.random() * 20, this.audioCtx.currentTime);
-        gain.gain.setValueAtTime(0, this.audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.4, this.audioCtx.currentTime + 0.01);
-        gain.gain.linearRampToValueAtTime(0, this.audioCtx.currentTime + 0.12);
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(panner);
-        panner.connect(this.masterGain);
-        osc1.start();
-        osc2.start();
-        osc1.stop(this.audioCtx.currentTime + 0.12);
-        osc2.stop(this.audioCtx.currentTime + 0.12);
+        tone(1900 + Math.random() * 60, 240, 0.13, "sawtooth", 0.44);
+        tone(2500, 650, 0.08, "square", 0.24);
+        tone(950, 150, 0.15, "sine", 0.28, 0.01);
+        tone(150, 55, 0.07, "sine", 0.24, 0);
+        noiseBurst(0.03, 8000, 3000, 0.1, "highpass");
       } else if (type === "enemyHit") {
-        const osc1 = this.audioCtx.createOscillator();
-        const osc2 = this.audioCtx.createOscillator();
-        const osc3 = this.audioCtx.createOscillator();
-        const gain = this.audioCtx.createGain();
-        osc1.type = "sawtooth";
-        osc2.type = "square";
-        osc3.type = "sine";
-        osc1.frequency.setValueAtTime(200 + Math.random() * 30, this.audioCtx.currentTime);
-        osc2.frequency.setValueAtTime(100 + Math.random() * 20, this.audioCtx.currentTime);
-        osc3.frequency.setValueAtTime(1e3 + Math.random() * 50, this.audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.5, this.audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0, this.audioCtx.currentTime + 0.3);
-        osc1.connect(gain);
-        osc2.connect(gain);
-        osc3.connect(gain);
-        gain.connect(panner);
-        panner.connect(this.masterGain);
-        osc1.start();
-        osc2.start();
-        osc3.start();
-        osc1.stop(this.audioCtx.currentTime + 0.3);
-        osc2.stop(this.audioCtx.currentTime + 0.3);
-        osc3.stop(this.audioCtx.currentTime + 0.2);
+        tone(190 + Math.random() * 30, 55, 0.22, "sawtooth", 0.3);
+        noiseBurst(0.24, 4200, 300, 0.35);
       } else if (type === "collectible") {
-        const osc1 = this.audioCtx.createOscillator();
-        const osc2 = this.audioCtx.createOscillator();
-        const gain = this.audioCtx.createGain();
-        osc1.type = "sine";
-        osc2.type = "sine";
-        osc1.frequency.setValueAtTime(660 + Math.random() * 30, this.audioCtx.currentTime);
-        osc2.frequency.setValueAtTime(880 + Math.random() * 30, this.audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0, this.audioCtx.currentTime + 0.25);
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(panner);
-        panner.connect(this.masterGain);
-        osc1.start();
-        osc2.start();
-        osc1.stop(this.audioCtx.currentTime + 0.25);
-        osc2.stop(this.audioCtx.currentTime + 0.25);
+        tone(660, null, 0.09, "sine", 0.22, 0);
+        tone(880, null, 0.09, "sine", 0.2, 0.05);
+        tone(1180, null, 0.14, "sine", 0.22, 0.1);
       } else if (type === "damage") {
-        const osc1 = this.audioCtx.createOscillator();
-        const osc2 = this.audioCtx.createOscillator();
-        const gain = this.audioCtx.createGain();
-        osc1.type = "sawtooth";
-        osc2.type = "square";
-        osc1.frequency.setValueAtTime(200 + Math.random() * 20, this.audioCtx.currentTime);
-        osc2.frequency.setValueAtTime(180 + Math.random() * 20, this.audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.4, this.audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0, this.audioCtx.currentTime + 0.3);
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(panner);
-        panner.connect(this.masterGain);
-        osc1.start();
-        osc2.start();
-        osc1.stop(this.audioCtx.currentTime + 0.3);
-        osc2.stop(this.audioCtx.currentTime + 0.3);
+        tone(220 + Math.random() * 20, 65, 0.28, "sawtooth", 0.32);
+        noiseBurst(0.3, 3000, 200, 0.4);
       } else if (type === "wave") {
-        const osc1 = this.audioCtx.createOscillator();
-        const osc2 = this.audioCtx.createOscillator();
-        const gain = this.audioCtx.createGain();
-        osc1.type = "sine";
-        osc2.type = "sine";
-        osc1.frequency.setValueAtTime(550 + Math.random() * 20, this.audioCtx.currentTime);
-        osc2.frequency.setValueAtTime(700 + Math.random() * 20, this.audioCtx.currentTime);
-        gain.gain.setValueAtTime(0, this.audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.3, this.audioCtx.currentTime + 0.05);
-        gain.gain.linearRampToValueAtTime(0, this.audioCtx.currentTime + 0.4);
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(panner);
-        panner.connect(this.masterGain);
-        osc1.start();
-        osc2.start();
-        osc1.stop(this.audioCtx.currentTime + 0.4);
-        osc2.stop(this.audioCtx.currentTime + 0.4);
+        [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => tone(freq, null, 0.22, "triangle", 0.22, i * 0.07));
       } else if (type === "easterEgg") {
-        const osc1 = this.audioCtx.createOscillator();
-        const osc2 = this.audioCtx.createOscillator();
-        const gain = this.audioCtx.createGain();
-        osc1.type = "sine";
-        osc2.type = "sine";
-        osc1.frequency.setValueAtTime(440, this.audioCtx.currentTime);
-        osc2.frequency.setValueAtTime(660, this.audioCtx.currentTime);
-        gain.gain.setValueAtTime(0, this.audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.3, this.audioCtx.currentTime + 0.05);
-        gain.gain.linearRampToValueAtTime(0, this.audioCtx.currentTime + 0.5);
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(panner);
-        panner.connect(this.masterGain);
-        osc1.start();
-        osc2.start();
-        osc1.stop(this.audioCtx.currentTime + 0.5);
-        osc2.stop(this.audioCtx.currentTime + 0.5);
+        [440, 554.37, 659.25, 880].forEach((freq, i) => tone(freq, null, 0.28, "sine", 0.22, i * 0.09));
       } else if (type === "powerup") {
-        const osc1 = this.audioCtx.createOscillator();
-        const osc2 = this.audioCtx.createOscillator();
-        const gain = this.audioCtx.createGain();
-        osc1.type = "sine";
-        osc2.type = "sine";
-        osc1.frequency.setValueAtTime(800 + Math.random() * 30, this.audioCtx.currentTime);
-        osc2.frequency.setValueAtTime(1e3 + Math.random() * 30, this.audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0, this.audioCtx.currentTime + 0.3);
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(panner);
-        panner.connect(this.masterGain);
-        osc1.start();
-        osc2.start();
-        osc1.stop(this.audioCtx.currentTime + 0.3);
-        osc2.stop(this.audioCtx.currentTime + 0.3);
+        tone(700, 1400, 0.22, "sine", 0.26);
+        noiseBurst(0.08, 5000, 3000, 0.05, "highpass");
       }
     }
     init() {
@@ -2178,6 +2199,7 @@
       this.powerups.forEach((powerup) => powerup.element.remove());
       this.projectiles.forEach((projectile) => projectile.element.remove());
       this.particles.forEach((particle) => particle.element.remove());
+      this.clearBobaSpill?.();
       this.enemies = [];
       this.collectibles = [];
       this.powerups = [];
@@ -2206,6 +2228,10 @@
       this.shotCount = 1;
       this.pierceLevel = 0;
       this.pickupRadius = 25;
+      this.rapidOverdriveUntil = 0;
+      this.scoreFrenzyUntil = 0;
+      this.magnetSurgeUntil = 0;
+      this.phaseShieldUntil = 0;
       this.comboCap = 3;
       this.scoreMultiplierPerk = 1;
       this.perkLevels = {};
@@ -2225,7 +2251,7 @@
       this.bossDefeatCountdownActive = false;
       this.bossDefeated = false;
       this.intermissionActive = false;
-      this.bobaSpillElements = [];
+      this.bobaPearls = [];
       this.bobaCelebrationActive = false;
       this.replayFrames = [];
       this.replayFrame = 0;
@@ -2262,7 +2288,26 @@
     }
     gameLoop() {
       if (!this.gameRunning) return;
-      if (this.perkChoicePending || this.isPaused || this.duelIntroActive || this.duelQueueMenuOpen || this.bobaCelebrationActive) {
+      if (this.perkChoicePending || this.isPaused || this.duelIntroActive || this.duelQueueMenuOpen) {
+        requestAnimationFrame(() => this.gameLoop());
+        return;
+      }
+      if (this.bobaCelebrationActive) {
+        this.handleInput();
+        this.updateBobaPearls();
+        this.checkBobaPearlCollisions();
+        this.projectiles.forEach((projectile) => {
+          if (projectile.homing) this.applyHoming(projectile);
+          projectile.x += projectile.vx || 0;
+          projectile.y += projectile.vy !== void 0 ? projectile.vy : -projectile.speed;
+          this.updateElementPosition(projectile);
+          if (projectile.isBolt) {
+            const angleDeg = Math.atan2(projectile.vx, -projectile.vy) * 180 / Math.PI;
+            projectile.element.style.transform = `rotate(${angleDeg}deg)`;
+          }
+        });
+        this.cleanup();
+        this.updateUI();
         requestAnimationFrame(() => this.gameLoop());
         return;
       }
@@ -2323,6 +2368,7 @@
         if (second !== this.duelLastTimelineSecond) {
           this.duelLastTimelineSecond = second;
           this.duelScoreTimeline.push({ t: second, score: this.score });
+          this.syncDuelProgress();
         }
         this.updateRivalHUD();
       }
@@ -2392,6 +2438,8 @@
       this.duelMode = true;
       this.duelContract = contract;
       this.duelInitials = initials;
+      this.duelMatchId = contract.matchId;
+      this.duelRole = contract.role;
       this.duelScoreTimeline = [];
       this.duelStartedAt = 0;
       this.duelLastTimelineSecond = -1;
@@ -2521,7 +2569,7 @@
       document.getElementById("duelStatus").textContent = "OPPONENT JOINED.";
       await new Promise((resolve) => setTimeout(resolve, 700));
       document.getElementById("duelModal").classList.remove("show");
-      this.startDuel(initials, { contract: match.contract, rival });
+      this.startDuel(initials, { contract: match.contract, rival, matchId: match.requestId, role });
     }
     cancelDuelQueue() {
       this.duelQueueActive = false;
@@ -2540,6 +2588,20 @@
       const delta = this.score - rivalScore;
       document.getElementById("rivalScore").textContent = `${rivalScore.toLocaleString()} PTS`;
       document.getElementById("rivalDelta").textContent = delta === 0 ? "TIED" : delta > 0 ? `AHEAD +${delta.toLocaleString()}` : `BEHIND ${Math.abs(delta).toLocaleString()}`;
+    }
+    async syncDuelProgress() {
+      if (!this.duelMode || !this.duelMatchId || !this.duelRole) return;
+      const state = await this.postDuelQueue({
+        action: "progress",
+        requestId: this.duelMatchId,
+        role: this.duelRole,
+        score: this.score,
+        wave: this.wave
+      });
+      if (!state?.match) return;
+      const rival = this.duelRole === "playerOne" ? state.match.playerTwo : state.match.playerOne;
+      if (rival) this.duelContract.rival = rival;
+      this.updateRivalHUD();
     }
     async submitDuelResult() {
       if (!this.duelMode || !this.duelContract || this.duelSubmitted) return;
@@ -2759,9 +2821,11 @@
       this.playerPos.x = newX;
       this.playerPos.y = newY;
       this.updatePlayerPosition();
+      if (Math.abs(deltaX) > 0.05 || Math.abs(deltaY) > 0.05) {
+        this.lastMoveAngle = Math.atan2(deltaX, -deltaY);
+      }
       if (Math.abs(deltaX) > 0.3 || Math.abs(deltaY) > 0.3) {
         this.spawnThrusterParticle();
-        this.lastMoveAngle = Math.atan2(deltaX, -deltaY);
       }
       this.checkCornerHit(arenaRect);
     }
@@ -2808,23 +2872,23 @@
       });
     }
     triggerDVDEasterEgg() {
-        const message = document.createElement("div");
-        message.className = "easter-egg-message";
-        message.innerHTML = `
-              \u{1F389} CORNER HIT! \u{1F389}<br>
-              DVD SCREENSAVER ACHIEVED!<br>
-              <div style="font-size: 0.8rem; margin-top: 10px; opacity: 0.8;">
-                Bonus: 1000 points \xD7 wave multiplier!
-              </div>
-            `;
-        this.arena.appendChild(message);
-      this.createConfettiExplosion();
-      this.createSound("easterEgg");
-      this.addScore(1e3 * this.waveMultiplier);
       if (this.dvdWaveShown === this.wave || this.dvdScreensaverActive || this.arena.querySelector(".dvd-logo")) {
-        setTimeout(() => message.remove(), 4000);
+        this.showFloatingText(this.playerPos.x, this.playerPos.y, "CORNER HIT!", "#00f5ff");
         return;
       }
+      const message = document.createElement("div");
+      message.className = "easter-egg-message";
+      message.innerHTML = `
+            \u{1F389} CORNER HIT! \u{1F389}<br>
+            DVD LOGO RELEASED!<br>
+            <div style="font-size: 0.8rem; margin-top: 10px; opacity: 0.8;">
+              Catch it before it escapes for a jackpot!
+            </div>
+          `;
+      this.arena.appendChild(message);
+      this.createConfettiExplosion();
+      this.createSound("easterEgg");
+      this.addScore(150 * this.waveMultiplier);
       this.dvdScreensaverActive = true;
       this.dvdWaveShown = this.wave;
       const dvdLogo = document.createElement("div");
@@ -2837,34 +2901,54 @@
       let velocityX = Math.random() < 0.5 ? 1.8 : -1.8;
       let velocityY = Math.random() < 0.5 ? 1.35 : -1.35;
       let endsAt = 0;
+      let lastCornerBounceAt = 0;
+      const catchDVD = () => {
+        const perfectCorner = Date.now() - lastCornerBounceAt < 350;
+        const jackpot = Math.round((perfectCorner ? 3000 : 1200) * this.waveMultiplier * this.comboMultiplier);
+        this.addScore(jackpot);
+        this.showFloatingText(x, y - 16, perfectCorner ? `PERFECT CATCH! +${jackpot}` : `DVD CAUGHT! +${jackpot}`, "#ffd700");
+        this.createConfettiExplosion();
+        this.createSound("powerup", x);
+        const bonusRoll = Math.random();
+        const bonusType = bonusRoll < 0.3 ? "shield" : bonusRoll < 0.6 ? "multishot" : "shoot";
+        this.activatePowerup(bonusType, x, y + 18);
+        dvdLogo.remove();
+        this.dvdScreensaverActive = false;
+      };
       const animateDVD = () => {
-        if (!dvdLogo.parentNode || Date.now() >= endsAt) {
+        if (!dvdLogo.parentNode) return;
+        if (Date.now() >= endsAt) {
           dvdLogo.remove();
           this.dvdScreensaverActive = false;
+          this.showFloatingText(x, y, "DVD ESCAPED!", "#ff6600");
           return;
         }
         const arenaWidth = this.arena.clientWidth;
         const arenaHeight = this.arena.clientHeight;
         x += velocityX;
         y += velocityY;
-        let bounced = false;
-        if (x <= 0 || x >= arenaWidth - 58) {
+        const xHit = x <= 0 || x >= arenaWidth - 58;
+        const yHit = y <= 0 || y >= arenaHeight - 35;
+        if (xHit) {
           velocityX *= -1;
           x = Math.max(0, Math.min(arenaWidth - 58, x));
-          bounced = true;
         }
-        if (y <= 0 || y >= arenaHeight - 35) {
+        if (yHit) {
           velocityY *= -1;
           y = Math.max(0, Math.min(arenaHeight - 35, y));
-          bounced = true;
         }
-        if (bounced) {
+        if (xHit || yHit) {
           const color = colors[Math.floor(Math.random() * colors.length)];
           dvdLogo.style.background = color;
           dvdLogo.style.boxShadow = `0 0 30px ${color}`;
+          if (xHit && yHit) lastCornerBounceAt = Date.now();
         }
         dvdLogo.style.left = `${x}px`;
         dvdLogo.style.top = `${y}px`;
+        if (this.isColliding(this.playerPos, { x, y }, 25, 46)) {
+          catchDVD();
+          return;
+        }
         requestAnimationFrame(animateDVD);
       };
       setTimeout(() => {
@@ -2934,7 +3018,8 @@
     shoot() {
       if (this.perkChoicePending || !this.gameRunning || this.isPaused) return;
       const now = Date.now();
-      const fireCooldown = this.orbitalFire ? 45 : this.shootCooldown;
+      const overdriveActive = now < this.rapidOverdriveUntil;
+      const fireCooldown = this.orbitalFire ? 45 : overdriveActive ? Math.max(20, Math.round(this.shootCooldown / 2)) : this.shootCooldown;
       if (now - this.lastShot < fireCooldown) return;
       this.lastShot = now;
       this.replayShoot = true;
@@ -2944,7 +3029,7 @@
       } else if (this.directionalFire) {
         baseAngle = this.lastMoveAngle;
       }
-      const totalShots = this.orbitalFire ? this.orbitalShots : this.shotCount + (this.multishotStacks || 0);
+      const totalShots = this.orbitalFire ? this.orbitalShots : Math.min(7, this.shotCount + (this.multishotStacks || 0));
       const angles = this.getSpreadAngles(totalShots);
       angles.forEach((angleDeg) => {
         const rad = baseAngle + angleDeg * Math.PI / 180;
@@ -2956,9 +3041,11 @@
           vy: -Math.cos(rad) * 8,
           pierce: 1 + this.pierceLevel,
           homing: this.homingShots,
+          isBolt: true,
           source: "player",
-          element: this.createElement("projectile")
+          element: this.createElement("projectile player-bolt")
         };
+        projectile.element.style.transform = `rotate(${rad * 180 / Math.PI}deg)`;
         this.updateElementPosition(projectile);
         this.projectiles.push(projectile);
       });
@@ -2997,33 +3084,92 @@
       }
     }
     createBobaSpill(x, y) {
-      this.bobaSpillElements ||= [];
+      this.bobaPearls ||= [];
       this.bobaCelebrationActive = true;
       const banner = document.createElement("div");
       banner.className = "boba-celebration";
       banner.textContent = "BOBA COLOSSUS SPLASHED!";
       this.arena.appendChild(banner);
       setTimeout(() => banner.remove(), 4600);
-      const pieces = 76;
+      const pieces = 30;
       for (let index = 0; index < pieces; index++) {
+        const isPearl = index % 3 !== 0;
+        const angle = Math.random() * Math.PI * 2;
+        const burstSpeed = 1.6 + Math.random() * 2.2;
         const spill = document.createElement("div");
-        spill.className = index % 3 === 0 ? "boba-spill-tea" : "boba-spill-pearl";
-        spill.style.left = `${x + 34 + (Math.random() - 0.5) * 24}px`;
-        spill.style.top = `${y + 40 + (Math.random() - 0.5) * 24}px`;
-        spill.style.setProperty("--spill-x", `${(Math.random() - 0.5) * 320}px`);
-        spill.style.setProperty("--spill-y", `${20 + Math.random() * 230}px`);
-        spill.style.setProperty("--spill-rotation", `${Math.random() * 540 - 270}deg`);
-        spill.style.animationDelay = `${Math.random() * 0.35}s`;
+        spill.className = isPearl ? "boba-spill-pearl" : "boba-spill-tea";
         this.arena.appendChild(spill);
-        this.bobaSpillElements.push(spill);
+        const pearl = {
+          x: x + 34 + (Math.random() - 0.5) * 20,
+          y: y + 40 + (Math.random() - 0.5) * 20,
+          vx: Math.cos(angle) * burstSpeed,
+          vy: Math.sin(angle) * burstSpeed,
+          friction: 0.94,
+          minDrift: 0.12 + Math.random() * 0.2,
+          size: isPearl ? 12 : 18,
+          collectible: isPearl,
+          points: 140,
+          expiresAt: Date.now() + 13000,
+          element: spill
+        };
+        this.updateElementPosition(pearl);
+        this.bobaPearls.push(pearl);
+      }
+    }
+    updateBobaPearls() {
+      if (!this.bobaPearls?.length) return;
+      const arenaRect = this.arena.getBoundingClientRect();
+      const margin = 70;
+      for (let index = this.bobaPearls.length - 1; index >= 0; index--) {
+        const pearl = this.bobaPearls[index];
+        const speed = Math.hypot(pearl.vx, pearl.vy);
+        if (speed > pearl.minDrift) {
+          pearl.vx *= pearl.friction;
+          pearl.vy *= pearl.friction;
+        } else if (speed > 0) {
+          const scale = pearl.minDrift / speed;
+          pearl.vx *= scale;
+          pearl.vy *= scale;
+        }
+        pearl.x += pearl.vx;
+        pearl.y += pearl.vy;
+        this.updateElementPosition(pearl);
+        const offScreen = pearl.x < -margin || pearl.x > arenaRect.width + margin || pearl.y < -margin || pearl.y > arenaRect.height + margin;
+        if (offScreen || Date.now() > pearl.expiresAt) {
+          this.removeBobaPearl(index);
+        }
+      }
+    }
+    checkBobaPearlCollisions() {
+      if (!this.bobaPearls?.length) return;
+      for (let index = this.bobaPearls.length - 1; index >= 0; index--) {
+        const pearl = this.bobaPearls[index];
+        if (!pearl.collectible) continue;
+        if (this.isColliding(this.playerPos, pearl, this.getEffectivePickupRadius(), pearl.size)) {
+          const awarded = Math.round(pearl.points * this.waveMultiplier * this.comboMultiplier);
+          this.addScore(awarded);
+          this.createSound("collectible", pearl.x);
+          this.showFloatingText(pearl.x, pearl.y, `+${awarded}`, "#ffb7e0");
+          this.removeBobaPearl(index);
+        }
+      }
+    }
+    removeBobaPearl(index) {
+      if (this.bobaPearls[index]) {
+        this.bobaPearls[index].element.remove();
+        this.bobaPearls.splice(index, 1);
       }
     }
     fadeBobaSpill() {
-      this.bobaSpillElements?.forEach((spill) => {
-        spill.classList.add("boba-spill-fade");
-        setTimeout(() => spill.remove(), 2700);
+      this.bobaPearls?.forEach((pearl) => {
+        pearl.collectible = false;
+        pearl.element.classList.add("boba-spill-fade");
       });
-      this.bobaSpillElements = [];
+      setTimeout(() => this.clearBobaSpill(), 850);
+    }
+    clearBobaSpill() {
+      this.bobaPearls?.forEach((pearl) => pearl.element.remove());
+      this.bobaPearls = [];
     }
     fireBossProjectile(enemy, target, speed, color, homing = false) {
       const projectile = {
@@ -3249,6 +3395,30 @@
         });
       }
       this.enemies.forEach((enemy) => {
+        const nowTs = Date.now();
+        if (enemy.burstUntil && nowTs < enemy.burstUntil) {
+          enemy.x += enemy.vx;
+          enemy.y += enemy.vy;
+          enemy.vx *= 0.985;
+          enemy.vy *= 0.985;
+          this.updateElementPosition(enemy);
+          return;
+        }
+        if (enemy.driftUntil && nowTs < enemy.driftUntil) {
+          const targetAngle = Math.atan2(this.playerPos.y - enemy.y, this.playerPos.x - enemy.x);
+          const currentAngle = Math.atan2(enemy.vy, enemy.vx);
+          let delta = targetAngle - currentAngle;
+          while (delta > Math.PI) delta -= Math.PI * 2;
+          while (delta < -Math.PI) delta += Math.PI * 2;
+          const angle = currentAngle + Math.max(-0.045, Math.min(0.045, delta));
+          const speed = Math.max(enemy.speed * 0.5, Math.hypot(enemy.vx, enemy.vy) * 0.99);
+          enemy.vx = Math.cos(angle) * speed;
+          enemy.vy = Math.sin(angle) * speed;
+          enemy.x += enemy.vx;
+          enemy.y += enemy.vy;
+          this.updateElementPosition(enemy);
+          return;
+        }
         const dx = this.playerPos.x - enemy.x;
         const dy = this.playerPos.y - enemy.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -3258,8 +3428,9 @@
             enemy.x += Math.cos(dodgeAngle) * 30;
             enemy.y += Math.sin(dodgeAngle) * 30;
           } else {
-            enemy.x += dx / distance * enemy.speed;
-            enemy.y += dy / distance * enemy.speed;
+            const step = Math.min(enemy.speed, distance);
+            enemy.x += dx / distance * step;
+            enemy.y += dy / distance * step;
           }
           this.updateElementPosition(enemy);
         }
@@ -3279,31 +3450,43 @@
         projectile.x += projectile.vx || 0;
         projectile.y += projectile.vy !== void 0 ? projectile.vy : -projectile.speed;
         this.updateElementPosition(projectile);
+        if (projectile.isBolt) {
+          const angleDeg = Math.atan2(projectile.vx, -projectile.vy) * 180 / Math.PI;
+          projectile.element.style.transform = `rotate(${angleDeg}deg)`;
+        }
       });
       this.particles.forEach((particle) => {
         particle.x += particle.vx || 0;
         particle.y += particle.vy || 0;
         this.updateElementPosition(particle);
       });
+      this.updateBobaPearls();
       this.updateOverheat();
     }
     applyHoming(projectile) {
-      let nearest = null;
-      let nearestDistance = Infinity;
-      this.enemies.forEach((enemy) => {
-        const distance = Math.hypot(enemy.x - projectile.x, enemy.y - projectile.y);
-        if (distance < nearestDistance) {
-          nearest = enemy;
-          nearestDistance = distance;
-        }
-      });
-      if (!nearest || nearestDistance > 260) return;
-      const targetAngle = Math.atan2(nearest.y - projectile.y, nearest.x - projectile.x);
+      if (projectile.homingTarget && !this.enemies.includes(projectile.homingTarget)) {
+        projectile.homingTarget = null;
+      }
+      if (!projectile.homingTarget) {
+        let nearest = null;
+        let nearestDistance = Infinity;
+        this.enemies.forEach((enemy) => {
+          const distance = Math.hypot(enemy.x - projectile.x, enemy.y - projectile.y);
+          if (distance < nearestDistance) {
+            nearest = enemy;
+            nearestDistance = distance;
+          }
+        });
+        if (nearest && nearestDistance <= 320) projectile.homingTarget = nearest;
+      }
+      const target = projectile.homingTarget;
+      if (!target) return;
+      const targetAngle = Math.atan2(target.y - projectile.y, target.x - projectile.x);
       const currentAngle = Math.atan2(projectile.vy, projectile.vx);
       let delta = targetAngle - currentAngle;
       while (delta > Math.PI) delta -= Math.PI * 2;
       while (delta < -Math.PI) delta += Math.PI * 2;
-      const angle = currentAngle + Math.max(-0.035, Math.min(0.035, delta));
+      const angle = currentAngle + Math.max(-0.16, Math.min(0.16, delta));
       const speed = Math.hypot(projectile.vx, projectile.vy);
       projectile.vx = Math.cos(angle) * speed;
       projectile.vy = Math.sin(angle) * speed;
@@ -3324,9 +3507,16 @@
         this.showFloatingText(this.playerPos.x, this.playerPos.y, "OVERHEAT!", "#ff6600");
       }
     }
+    pickSpawnSide() {
+      const roll = Math.random();
+      if (roll < 0.62) return 0;
+      if (roll < 0.79) return 1;
+      if (roll < 0.96) return 3;
+      return 2;
+    }
     spawnEnemy() {
       const arenaRect = this.arena.getBoundingClientRect();
-      const side = Math.floor(Math.random() * 4);
+      const side = this.pickSpawnSide();
       let x, y;
       switch (side) {
         case 0:
@@ -3349,18 +3539,53 @@
       const isFastEnemy = Math.random() < 0.28 && this.wave > 2;
       const health = Math.max(1, 1 + Math.floor((this.wave - 1) / 2));
       const baseSpeed = this.wave === 1 ? 0.28 : 0.22 + (this.wave - 1) * 0.12;
+      const isHeavy = !this.duelMode && !isFastEnemy && Math.random() < 0.34;
+      const splitLevel = isHeavy ? 2 : 0;
+      const size = isFastEnemy ? 16 : isHeavy ? 38 : 22;
       const enemy = {
         x,
         y,
         speed: isFastEnemy ? 1.1 + (this.wave - 1) * 0.18 : baseSpeed + Math.random() * 0.11 + (this.wave - 1) * 0.12,
-        size: isFastEnemy ? 16 : 22,
+        size,
         type: isFastEnemy ? "fast" : "normal",
-        points: isFastEnemy ? 180 : 120,
-        health,
+        points: isFastEnemy ? 180 : isHeavy ? 240 : 120,
+        health: health + (isHeavy ? 1 : 0),
+        splitLevel,
         element: this.createElement(isFastEnemy ? "enemy-fast" : "enemy")
       };
+      enemy.element.style.width = `${size}px`;
+      enemy.element.style.height = `${size}px`;
       this.updateElementPosition(enemy);
       this.enemies.push(enemy);
+    }
+    splitAsteroid(enemy) {
+      if (this.duelMode || !enemy.splitLevel) return;
+      const fragmentSize = Math.max(14, Math.round(enemy.size * 0.62));
+      const travelAngle = Math.atan2(this.playerPos.y - enemy.y, this.playerPos.x - enemy.x);
+      const burstEnd = Date.now() + 900 + Math.random() * 350;
+      for (const direction of [-1, 1]) {
+        const burstAngle = travelAngle + direction * (Math.PI / 2 + (Math.random() - 0.5) * 0.6);
+        const burstSpeed = 3.4 + Math.random() * 1.8;
+        const fragment = {
+          x: enemy.x + enemy.size / 2 - fragmentSize / 2 + direction * 8,
+          y: enemy.y + enemy.size / 2 - fragmentSize / 2,
+          speed: enemy.speed * 1.22,
+          size: fragmentSize,
+          type: "normal",
+          points: 85,
+          health: 1,
+          splitLevel: enemy.splitLevel - 1,
+          vx: Math.cos(burstAngle) * burstSpeed,
+          vy: Math.sin(burstAngle) * burstSpeed,
+          burstUntil: burstEnd,
+          driftUntil: burstEnd + 900 + Math.random() * 400,
+          element: this.createElement("enemy")
+        };
+        fragment.element.style.width = `${fragmentSize}px`;
+        fragment.element.style.height = `${fragmentSize}px`;
+        this.updateElementPosition(fragment);
+        this.enemies.push(fragment);
+      }
     }
     spawnCollectible() {
       const arenaRect = this.arena.getBoundingClientRect();
@@ -3377,10 +3602,14 @@
       const arenaRect = this.arena.getBoundingClientRect();
       const roll = Math.random();
       let type;
-      if (roll < 0.08) type = "1up";
-      else if (roll < 0.38) type = "shoot";
-      else if (roll < 0.68) type = "multishot";
-      else type = "shield";
+      if (roll < 0.06) type = "1up";
+      else if (roll < 0.22) type = "shoot";
+      else if (roll < 0.38) type = "multishot";
+      else if (roll < 0.54) type = "shield";
+      else if (roll < 0.66) type = "mochi";
+      else if (roll < 0.78) type = "dango";
+      else if (roll < 0.89) type = "sushi";
+      else type = "taiyaki";
       const powerup = {
         x: Math.random() * (arenaRect.width - 15),
         y: Math.random() * (arenaRect.height - 15),
@@ -3471,6 +3700,7 @@
                 if (this.chainLightning) this.triggerChainLightning(killedEnemy.x, killedEnemy.y);
                 this.runBossDefeatCountdown();
               } else {
+                this.splitAsteroid(killedEnemy);
                 this.removeEnemy(enemyIndex);
                 if (this.chainLightning) this.triggerChainLightning(killedEnemy.x, killedEnemy.y);
                 this.checkWaveProgression();
@@ -3485,7 +3715,7 @@
         }
       }
       this.collectibles.forEach((collectible, index) => {
-        if (this.isColliding(this.playerPos, collectible, this.pickupRadius, 15)) {
+        if (this.isColliding(this.playerPos, collectible, this.getEffectivePickupRadius(), 15)) {
           this.addScore(200 * this.waveMultiplier * this.comboMultiplier);
           this.createSound("collectible", collectible.x);
           this.removeCollectible(index);
@@ -3493,13 +3723,14 @@
         }
       });
       this.powerups.forEach((powerup, index) => {
-        if (this.isColliding(this.playerPos, powerup, this.pickupRadius, 15)) {
+        if (this.isColliding(this.playerPos, powerup, this.getEffectivePickupRadius(), 15)) {
           this.activatePowerup(powerup.type, powerup.x, powerup.y);
           this.createSound("powerup", powerup.x);
           this.removePowerup(index);
           return;
         }
       });
+      this.checkBobaPearlCollisions();
     }
     updateCombo() {
       const now = Date.now();
@@ -3537,6 +3768,7 @@
       setTimeout(() => bolt.remove(), 220);
       this.addScore(target.points * this.waveMultiplier * this.comboMultiplier * 0.5);
       this.enemiesKilled++;
+      this.splitAsteroid(target);
       this.removeEnemy(targetIndex);
       if (target.type === "boss") {
         if (target.ability === "boba") this.createBobaSpill(target.x, target.y);
@@ -3555,7 +3787,7 @@
         this.rapidActiveUntil = Infinity;
         this.showFloatingText(x, y, this.rapidStacks > 1 ? `RAPID FIRE x${this.rapidStacks}!` : "RAPID FIRE!", "#ff6600");
       } else if (type === "multishot") {
-        this.multishotStacks = (this.multishotStacks || 0) + 1;
+        this.multishotStacks = Math.min(7 - this.shotCount, (this.multishotStacks || 0) + 1);
         this.multishotActiveUntil = Math.max(Date.now() + 5e3, this.multishotActiveUntil || Date.now()) + 5e3;
         if (this.multishotTimer) clearTimeout(this.multishotTimer);
         this.multishotTimer = setTimeout(() => {
@@ -3574,6 +3806,22 @@
       } else if (type === "1up") {
         this.lives++;
         this.showFloatingText(x, y, "+1 LIFE", "#ff2d95");
+        this.updateUI();
+      } else if (type === "mochi") {
+        this.rapidOverdriveUntil = Date.now() + 10000;
+        this.showFloatingText(x, y, "MOCHI OVERDRIVE!", "#ffb3c6");
+        this.updateUI();
+      } else if (type === "dango") {
+        this.scoreFrenzyUntil = Date.now() + 12000;
+        this.showFloatingText(x, y, "DANGO FRENZY x2!", "#ff9fc0");
+        this.updateUI();
+      } else if (type === "sushi") {
+        this.magnetSurgeUntil = Date.now() + 10000;
+        this.showFloatingText(x, y, "SUSHI MAGNET!", "#ff8a7a");
+        this.updateUI();
+      } else if (type === "taiyaki") {
+        this.phaseShieldUntil = Date.now() + 5000;
+        this.showFloatingText(x, y, "TAIYAKI PHASE!", "#e0a84e");
         this.updateUI();
       }
     }
@@ -3614,7 +3862,14 @@
       });
       this.showFloatingText(this.playerPos.x, this.playerPos.y, "WEAPONS LOST", "#ff6600");
     }
+    getEffectivePickupRadius() {
+      return this.pickupRadius + (Date.now() < this.magnetSurgeUntil ? 90 : 0);
+    }
     takeDamage(isOverheat = false) {
+      if (!isOverheat && Date.now() < this.phaseShieldUntil) {
+        this.showFloatingText(this.playerPos.x, this.playerPos.y, "PHASE SHIELD!", "#e0a84e");
+        return;
+      }
       this.lives--;
       if (!isOverheat) this.waveTookDamage = true;
       this.resetWeapons();
@@ -3672,7 +3927,8 @@
         this.submitDuelResult();
         this.gameRunning = false;
         document.getElementById("rivalHud").classList.remove("show");
-        this.finishRun("success", this.highScore);
+        this.clearBobaSpill();
+        this.showDuelResult(true);
         return;
       }
       this.enemiesKilled = 0;
@@ -3692,7 +3948,7 @@
     }
     spawnBossAsteroid() {
       const arenaRect = this.arena.getBoundingClientRect();
-      const side = Math.floor(Math.random() * 4);
+      const side = this.pickSpawnSide();
       let x, y;
       switch (side) {
         case 0:
@@ -3737,7 +3993,7 @@
       const bobaTeaBoss = {
         label: "Boba Colossus",
         eliteLabel: "Boba Colossus, Tapioca Tyrant",
-        size: 142,
+        size: 66,
         speed: 0.68,
         health: 28,
         points: 2400,
@@ -3790,9 +4046,11 @@
     }
     splitBossAsteroid(x, y) {
       const pieceCount = 3;
+      const burstEnd = Date.now() + 950 + Math.random() * 350;
       for (let i = 0; i < pieceCount; i++) {
         const angle = i / pieceCount * Math.PI * 2 + Math.random() * 0.5;
         const offset = 20;
+        const burstSpeed = 3.6 + Math.random() * 2;
         const piece = {
           x: x + Math.cos(angle) * offset,
           y: y + Math.sin(angle) * offset,
@@ -3801,6 +4059,10 @@
           type: "normal",
           points: 120,
           health: 1,
+          vx: Math.cos(angle) * burstSpeed,
+          vy: Math.sin(angle) * burstSpeed,
+          burstUntil: burstEnd,
+          driftUntil: burstEnd + 900 + Math.random() * 400,
           element: this.createElement("enemy")
         };
         this.updateElementPosition(piece);
@@ -4129,7 +4391,8 @@
     addScore(points) {
       const basePoints = Math.max(0, Math.min(1e6, Number(points) || 0));
       const scoreMultiplier = Math.min(2.25, Math.max(1, Number(this.scoreMultiplierPerk) || 1));
-      this.score = Math.min(Number.MAX_SAFE_INTEGER, this.score + Math.round(basePoints * scoreMultiplier));
+      const frenzyMultiplier = Date.now() < this.scoreFrenzyUntil ? 2 : 1;
+      this.score = Math.min(Number.MAX_SAFE_INTEGER, this.score + Math.round(basePoints * scoreMultiplier * frenzyMultiplier));
       if (this.score > this.highScore) {
         this.highScore = this.score;
       }
@@ -4211,6 +4474,10 @@
       if (this.waveClearStreak) buffs.push(`<span class="buff-shield">NO-HIT STREAK x${this.waveClearStreak}</span>`);
       if (this.chainLightning) buffs.push('<span class="buff-multishot">CHAIN LIGHTNING</span>');
       if (this.homingShots) buffs.push('<span class="buff-multishot">HOMING ROUNDS</span>');
+      if (this.rapidOverdriveUntil > now) buffs.push('<span class="buff-rapid">\u26AA MOCHI OVERDRIVE</span>');
+      if (this.scoreFrenzyUntil > now) buffs.push('<span class="buff-multishot">\u{1F361} DANGO FRENZY x2</span>');
+      if (this.magnetSurgeUntil > now) buffs.push('<span class="buff-shield">\u{1F363} SUSHI MAGNET</span>');
+      if (this.phaseShieldUntil > now) buffs.push('<span class="buff-shield">\u{1F41F} TAIYAKI PHASE</span>');
       document.getElementById("activeBuffs").innerHTML = buffs.join("");
     }
     gameOver() {
@@ -4218,6 +4485,9 @@
       if (this.duelMode) {
         this.submitDuelResult();
         document.getElementById("rivalHud").classList.remove("show");
+        this.clearBobaSpill();
+        this.showDuelResult(false);
+        return;
       }
       this.stopBackgroundMusic();
       if (this.demoMode) {
@@ -4264,6 +4534,19 @@
         showAfter();
       }
     }
+    showDuelResult(completed) {
+      const rival = this.duelContract?.rival || { initials: "---", score: 0 };
+      const rivalScore = Math.max(0, Number(rival.score) || 0);
+      const won = completed && this.score > rivalScore;
+      const tied = completed && this.score === rivalScore;
+      document.getElementById("duelResultTitle").textContent = won ? "CONTRACT WON" : tied ? "CONTRACT TIED" : "CONTRACT COMPLETE";
+      document.getElementById("duelResultStatus").textContent = completed ? won ? "YOU BEAT YOUR RIVAL" : tied ? "SCORES ARE EVEN" : "RIVAL TAKES THE CONTRACT" : "CONTRACT LOST";
+      document.getElementById("duelResultPlayer").textContent = this.duelInitials;
+      document.getElementById("duelResultPlayerScore").textContent = this.score.toLocaleString();
+      document.getElementById("duelResultRival").textContent = rival.initials;
+      document.getElementById("duelResultRivalScore").textContent = rivalScore.toLocaleString();
+      document.getElementById("duelResult").classList.add("show");
+    }
     victory() {
       this.gameRunning = false;
       this.stopBackgroundMusic();
@@ -4298,6 +4581,7 @@
     if (game) {
       document.getElementById("gameOver").classList.remove("show");
       document.getElementById("successMessage").classList.remove("show");
+      document.getElementById("duelResult").classList.remove("show");
       document.getElementById("rivalHud").classList.remove("show");
       game.duelMode = false;
       game.duelContract = null;

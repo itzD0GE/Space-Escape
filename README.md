@@ -1,7 +1,7 @@
 # 404: Space Escape
 
-**Version:** 1.5.3  
-**Last Updated:** 2026-08-29
+**Version:** 1.6.0  
+**Last Updated:** 2026-08-31
 
 Space Escape is a wave-based browser shooter built as a playable 404 page. It supports single-player runs, a shared server leaderboard, and a short asynchronous Rival Contract queue.
 
@@ -46,6 +46,7 @@ public_html/
    |  |- donut-vanilla.png
    |  |- donut-strawberry.png
    |  |- donut-blueberry.png
+   |  |- nebula-bg.jpg
    |  `- junk-*.png
    `- api/
       |- highscore.php
@@ -153,6 +154,17 @@ The former gem pickups are transparent 3D donut assets. Their image files are in
 
 All donut glows use `drop-shadow`, so the glow follows the transparent donut silhouette rather than drawing a square around the item.
 
+### Japanese Sweets Pickups (Temporary Buffs)
+
+These pickups are drawn as inline SVG art (no separate image files) and grant a short-lived buff. Each shows a HUD buff tag for its full duration and clears itself automatically when it expires.
+
+| Treat | Effect | Duration |
+| --- | --- | --- |
+| Mochi | Doubles fire rate (Mochi Overdrive) | 10 seconds |
+| Dango | Doubles all points earned (Dango Frenzy) | 12 seconds |
+| Sushi | Greatly increases pickup radius (Sushi Magnet) | 10 seconds |
+| Taiyaki | Full damage immunity (Taiyaki Phase) | 5 seconds |
+
 ## Perks and Weapons
 
 After each cleared wave, the player chooses a permanent perk from the available pool.
@@ -171,19 +183,34 @@ After each cleared wave, the player chooses a permanent perk from the available 
 | Vector Thrusters | Fires in the movement direction |
 | Orbital Cannon | Replaces the current weapon set with rotating fire |
 | Chain Lightning | A kill arcs to a nearby enemy |
-| Homing Rounds | Shots curve toward nearby enemies |
+| Homing Rounds | Shots lock onto the nearest enemy and pursue it until it dies or leaves range |
 
 Orbital Cannon is a weapon swap. Its first selection clears other weapons and starts one rotating stream. Later Orbital Cannon selections add streams, up to four.
+
+Spread Fire and temporary Multi-Shot stacks combine, but total simultaneous shots are capped at 7.
 
 ## Waves and Bosses
 
 Enemy speed, spawn pressure, and wave quotas increase over time. Standard boss patterns include splitter, tracking, drone, gravity, meteor, and arc attacks. Later waves can spawn stronger elite versions.
 
+### Splitting Asteroids
+
+Single-player normal waves include standard and heavy asteroids. Standard asteroids do not split when destroyed. Heavy asteroids render at a larger size, take an additional hit, and break into two medium fragments, which themselves break into small fragments when destroyed. Fragments burst outward from the impact point for a brief moment before homing in on the player, rather than beelining immediately. Rival Contract does not use this random split variation.
+
 ### Wave 3: Boba Colossus
 
-Wave 3 features the Boba Colossus, a large, fast, angry boba-tea boss with a straw. It fires three boba pearls in a fan volley. The pearls are enemy bullets and damage the player on contact.
+Wave 3 features the Boba Colossus, a fast, angry boba-tea boss with a straw. It fires three boba pearls in a fan volley. The pearls are enemy bullets and damage the player on contact.
 
-When defeated, the Boba Colossus starts a 10-second celebration before the perk screen appears: a large foreground burst of harmless tea droplets and boba pearls, plus a splash announcement. The spill remains visible through the safe intermission and next-wave countdown, then fades as the next wave starts.
+When defeated, the Boba Colossus starts a 10-second celebration before the perk screen appears: the tea and tapioca pearls burst outward like an explosion, alongside a splash announcement banner. The ship can still move during the celebration, and collectible pearls award bonus score if caught before they drift off-screen and vanish.
+
+### DVD Corner Easter Egg
+
+Flying the ship into any of the four arena corners releases a bouncing DVD logo, a nod to the classic screensaver meme.
+
+- The corner hit itself awards a small style bonus and has a 10-second cooldown, but only one DVD logo release is allowed per wave.
+- The logo bounces around the arena for 15 seconds. Touching it with the ship catches it: catching it awards a jackpot bonus, scaled by the wave and combo multipliers, plus a random weapon bonus (Shield, Multi-Shot, or Rapid Fire).
+- Catching it within a third of a second of it bouncing off an exact corner, the meme moment, upgrades the payout to a "PERFECT CATCH" worth roughly double.
+- If the logo is not caught before its timer runs out, it escapes and the wave gets no reward from it.
 
 ### Safe Intermission
 
@@ -227,9 +254,9 @@ While the queue modal is open, the demo arena freezes and the live Wave/HUD disp
 
 ### Contract Play and Result Storage
 
-A Rival Contract has a Wave 3 target. The client records a score checkpoint every second and submits the completed result to `api/duel.php` when the player loses or clears Wave 3. That endpoint validates basic input and retains the latest 50 daily results in `api/duels.json`.
+A Rival Contract has a Wave 3 target. During an active match, each player publishes their score and wave once per second to `api/duel-queue.php`; the compact rival HUD displays the opponent's latest shared score. The client also records a score checkpoint every second and submits the completed result to `api/duel.php` when the player loses or clears Wave 3. It then shows a dedicated versus result screen with both initials, both scores, and a win, tie, or loss outcome. That endpoint validates basic input and retains the latest 50 daily results in `api/duels.json`.
 
-The current mode provides request/accept matchmaking, intro presentation, and result recording. Deterministic shared enemy spawns and a live synchronized opponent score feed are separate future enhancements; the UI intentionally does not present Rival Contract as live WebSocket multiplayer.
+The current mode provides request/accept matchmaking, matchup presentation, live score sharing through short PHP polls, and result recording. Deterministic shared enemy spawns remain a future enhancement; the mode does not require WebSockets or a persistent server process.
 
 ## PHP API Reference
 
@@ -250,6 +277,7 @@ All client requests are relative to the game file. If the game is installed at `
 | `GET ?requestId=<id>` | Lets Player One poll for the accepted match |
 | `POST request` | Creates a pending request with Player One's initials |
 | `POST accept` | Lets Player Two accept the request and create a match |
+| `POST progress` | Stores a player's current score and wave, then returns the updated match |
 | `POST cancel` | Removes Player One's pending request |
 
 ### `api/duel.php`
@@ -268,9 +296,12 @@ Keep file names and paths stable when replacing art:
 - `player-ship-tier-1.png` through `player-ship-tier-6.png`: player ship progression.
 - `boba-tea-boss.svg`: Wave 3 boss art.
 - `donut-*.png`: flavor-coded pickups.
+- `nebula-bg.jpg`: deep-background night-sky photo darkened behind the arena and stars. Keep this file web-sized (a few hundred KB); do not swap in a multi-megabyte original, since the game has no build/compression step.
 - `junk-*.png`: intermission debris.
 
 Use transparent PNG or SVG files. Avoid opaque rectangular backgrounds to prevent square artifacts around objects and glows.
+
+The arena background layers a dark scrim over `nebula-bg.jpg` for a mostly black, milky-way-at-night look that keeps foreground gameplay and text readable.
 
 ## License
 

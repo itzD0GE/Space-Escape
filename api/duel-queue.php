@@ -64,7 +64,10 @@ if (!is_array($payload)) {
 $action = (string) ($payload['action'] ?? '');
 $initials = strtoupper(preg_replace('/[^A-Z0-9]/', '', (string) ($payload['initials'] ?? '')));
 $requestId = preg_replace('/[^a-f0-9]/', '', (string) ($payload['requestId'] ?? ''));
-if (!in_array($action, ['request', 'accept', 'cancel'], true)) {
+$role = (string) ($payload['role'] ?? '');
+$score = filter_var($payload['score'] ?? null, FILTER_VALIDATE_INT);
+$wave = filter_var($payload['wave'] ?? null, FILTER_VALIDATE_INT);
+if (!in_array($action, ['request', 'accept', 'cancel', 'progress'], true)) {
     queueRespond(422, ['error' => 'Invalid queue action']);
 }
 if (($action === 'request' || $action === 'accept') && ($initials === '' || strlen($initials) > 3)) {
@@ -77,7 +80,7 @@ if ($file === false || !flock($file, LOCK_EX)) {
 }
 
 $data = readQueueData($file);
-$data['matches'] = array_values(array_filter($data['matches'] ?? [], static fn($match): bool => is_array($match) && ($match['createdAt'] ?? 0) > time() - 120));
+$data['matches'] = array_values(array_filter($data['matches'] ?? [], static fn($match): bool => is_array($match) && ($match['createdAt'] ?? 0) > time() - 900));
 $pending = $data['request'] ?? null;
 if (is_array($pending) && ($pending['createdAt'] ?? 0) < time() - 65) {
     $pending = null;
@@ -105,13 +108,35 @@ if ($action === 'request') {
     $match = [
         'requestId' => $pending['id'],
         'contract' => $contract,
-        'playerOne' => ['initials' => $pending['initials'], 'timeline' => []],
-        'playerTwo' => ['initials' => $initials, 'timeline' => []],
+        'playerOne' => ['initials' => $pending['initials'], 'score' => 0, 'wave' => 1, 'timeline' => []],
+        'playerTwo' => ['initials' => $initials, 'score' => 0, 'wave' => 1, 'timeline' => []],
         'createdAt' => time(),
     ];
     $data['matches'][] = $match;
     $data['request'] = null;
     $response = ['contract' => $contract, 'match' => $match];
+} elseif ($action === 'progress') {
+    if ($requestId === '' || !in_array($role, ['playerOne', 'playerTwo'], true) || $score === false || $score < 0 || $score > 1000000 || $wave === false || $wave < 1 || $wave > 4) {
+        flock($file, LOCK_UN);
+        fclose($file);
+        queueRespond(422, ['error' => 'Invalid contract progress']);
+    }
+    $matchIndex = null;
+    foreach ($data['matches'] as $index => $match) {
+        if (is_array($match) && ($match['requestId'] ?? '') === $requestId) {
+            $matchIndex = $index;
+            break;
+        }
+    }
+    if ($matchIndex === null) {
+        flock($file, LOCK_UN);
+        fclose($file);
+        queueRespond(404, ['error' => 'Contract match not found']);
+    }
+    $data['matches'][$matchIndex][$role]['score'] = $score;
+    $data['matches'][$matchIndex][$role]['wave'] = $wave;
+    $data['matches'][$matchIndex][$role]['updatedAt'] = time();
+    $response = ['contract' => $contract, 'match' => $data['matches'][$matchIndex]];
 } else {
     if (is_array($pending) && $requestId !== '' && hash_equals($pending['id'], $requestId)) {
         $data['request'] = null;
