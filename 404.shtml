@@ -99,7 +99,7 @@
               url("assets/nebula-bg.jpg") center / cover no-repeat;
             background-blend-mode: normal, normal, normal;
             overflow: hidden;
-            cursor: crosshair;
+            cursor: none;
             box-shadow: 0 0 50px rgba(0, 245, 255, 0.3);
             touch-action: none;
         }
@@ -2781,7 +2781,7 @@
       const arenaRect = this.arena.getBoundingClientRect();
       const touchX = touch.clientX - arenaRect.left;
       const touchY = touch.clientY - arenaRect.top;
-      const touchOffset = 60;
+      const touchOffset = 40;
       this.mousePosition.x = touchX;
       this.mousePosition.y = touchY - touchOffset;
       this.mouseControl = true;
