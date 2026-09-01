@@ -216,6 +216,15 @@ Flying the ship into any of the four arena corners releases a bouncing DVD logo,
 
 After a perk is selected, the player flies briefly without hostile spawns. Harmless local debris such as spacecraft parts, a rocket, phone, radio, robot, and satellite can float through the arena. These never cause damage.
 
+## Audio
+
+All sound effects and music are synthesized live with the Web Audio API. There are no external audio files to host, download, or license.
+
+- **Sound effects** (shoot, enemy hit, damage, collectible, powerup, wave clear, easter egg) are built from layered oscillators, pitch sweeps, and filtered white-noise bursts rather than static tones, giving impacts a noise-based "crunch" and the laser shot a multi-layer zap with a sub-bass thump for weight.
+- **Music** (ambient loop, per-theme boss themes) is a simple procedural note sequencer using the same oscillator engine.
+- Every sound is routed through a `PannerNode` positioned from the source's on-screen X position, so effects pan left/right based on where they happen in the arena.
+- The mute toggle and master gain control apply globally to both music and effects.
+
 ## Scoring
 
 Points come from enemy kills, bosses, salvage, near misses, and wave bonuses.
