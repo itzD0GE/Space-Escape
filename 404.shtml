@@ -104,7 +104,7 @@
               url("assets/nebula-bg.jpg") center / cover no-repeat;
             background-blend-mode: normal, normal, normal;
             overflow: hidden;
-            cursor: none;
+            cursor: crosshair; /* the locked mouse is hidden by the browser; in menus the pointer stays visible */
             box-shadow: 0 0 50px rgba(0, 245, 255, 0.3);
             touch-action: none;
         }
@@ -263,7 +263,7 @@
             background: transparent;
             text-align: center;
             padding: 10px 20px;
-            pointer-events: auto;
+            pointer-events: none; /* the title banner spans the arena's width; let clicks reach the side buttons */
         }
 
         .start-screen > * { pointer-events: none; }
