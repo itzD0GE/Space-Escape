@@ -1,6 +1,7 @@
 # 404: Space Escape
 
 **Version:** 2.1.0
+**Last Updated:** 2026-11-25
 **Studio:** Nicholas Tech LLC (its first game)
 **Play it:** <https://texascabinetryco.com/bstudio/404.shtml>
 
@@ -29,6 +30,7 @@ It runs on plain browser modules and PHP. There is **no build step and nothing t
 - [API](#api)
 - [Tests](#tests)
 - [Release checklist](#release-checklist)
+- [Version history](#version-history)
 - [License](#license)
 
 ## What's new in 2.1
@@ -334,7 +336,74 @@ The API test writes into `api/data/`. Clear its JSON files afterwards so test sc
 2. Run both tests.
 3. Play a run locally.
 4. Upload the changed files to `bstudio/` and check them live with a cache-busting query.
-5. Update this README and its screenshots (`docs/images/`).
+5. Add an entry to [Version history](#version-history), update the version and date at the top of this README, and refresh the screenshots in `docs/images/` if the look changed.
+
+## Version history
+
+Versions follow [Semantic Versioning](https://semver.org/):
+
+- **MAJOR:** a rebuild or a change that breaks saved replays and leaderboards
+- **MINOR:** new features (bosses, enemies, perks, modes)
+- **PATCH:** bug fixes and small adjustments
+
+The version lives in three places, kept in step on every release: `GAME_VERSION` in `js/data.js`, `CACHE` in `sw.js`, and the top of this file. `SIM_VERSION` in `js/sim.js` is separate and only goes up when game rules change.
+
+### 2.1.0 (2026-11-25)
+
+- New special bosses: Moolissa the Mad Cow (wave 5) and Lilo the Red Heeler (wave 7), rotating with the Boba Colossus every sixth wave after wave 7.
+- New enemies: dart squadrons, snipers, flankers, mines and shield carriers.
+- Biomes: the sky changes colour every three waves.
+- Mouse lock: the pointer stays in the arena; Esc releases it and pauses. Can be turned off in Settings.
+- Balance pass: caps on the no-hit streak (4), Rapid Fire (8) and lives (5); tougher bosses; DVD jackpot no longer multiplied by combo; Reinforced Hull limited to 2.
+- Fix: the server rejected runs longer than 6 minutes. Rejected or unreachable submissions now show the reason and are retried on the next visit.
+- Security: Rival Contract seats are protected by a per-player key; the shared attack count can only grow; the score plausibility bound was tightened.
+- WordPress must-use plugin shows the game on every missing page of the site.
+- Achievements: Udder Chaos and Good Girl.
+- Simulation version 3: 2.0 replays no longer play back.
+- README rewritten with screenshots.
+
+### 2.0.x (2026-11)
+
+2.0.1 to 2.0.4 were layout and caching fixes after launch: the arena grows to 1,400 px on large screens, the Top Pilots box moved into the menu column, the Season 1 Legend line stays on one line, and the service worker always fetches fresh files despite the host's long cache headers.
+
+### 2.0.0 (2026-11)
+
+The Nicholas Tech LLC edition, a full rebuild:
+
+- Deterministic 60 Hz simulation split into modules, with a canvas renderer, particles and synthesized layered music.
+- New mechanics: dash, grazing, Nova Bomb, weapon evolutions, elite enemies, wave mutators, boss enrage phases and a difficulty director.
+- Ships with unlocks (Vanguard, Dart, Bastion, Wraith), achievements and a local profile.
+- Daily Challenge with a ghost of the day's best run.
+- Rival Contract rebuilt on a shared seed, with attack squads and the ACE bot when nobody is waiting.
+- Real leaderboards (All-Time, This Week, Daily) with signed run tokens, rate limits, plausibility checks and stored replays that can be re-simulated.
+- Installable, works offline, gamepad support, remappable keys and accessibility settings.
+- Optional daily lore written by Claude.
+- Studio credit changed to Nicholas Tech LLC. Leaderboards restarted as Season 2; the v1 champion is shown as the Season 1 Legend.
+
+### 1.6.1 (2026-09-01)
+
+- Mobile: touch offset reduced from 60 to 40 pixels so the ship sits closer to the finger.
+
+### 1.6.0 (2026-08-31)
+
+- Japanese sweets pickups: Mochi (double fire rate), Dango (double points), Sushi (big pickup radius), Taiyaki (immunity).
+- Heavy asteroids that split into fragments.
+- Boba Colossus 10-second celebration with collectible pearls.
+- DVD corner easter egg with a perfect-catch bonus.
+- Nebula background; unused junk art removed.
+
+### 1.5.3 (2026-08-29)
+
+- Boba Colossus updates.
+
+### 1.5.2 (2026-08-29)
+
+- Rival Contract: request and accept queue (`api/duel-queue.php`) and daily results (`api/duel.php`).
+- Large gameplay and README update.
+
+### 1.0.0 (2026-08-28)
+
+- Initial release: wave-based arcade shooter on the 404 page, with perks, a shared leaderboard and attract mode.
 
 ## License
 
