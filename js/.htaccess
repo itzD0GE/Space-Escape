@@ -1,0 +1,4 @@
+# Game code must never be served stale: let browsers revalidate on every load.
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-cache"
+</IfModule>

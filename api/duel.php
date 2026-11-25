@@ -62,12 +62,12 @@ if (!is_array($payload)) {
     duelRespond(400, ['error' => 'Expected a JSON object']);
 }
 
-$initials = strtoupper(preg_replace('/[^A-Z0-9]/', '', (string) ($payload['initials'] ?? '')));
+$initials = substr(preg_replace('/[^A-Z0-9]/', '', strtoupper((string) ($payload['initials'] ?? ''))), 0, 3);
 $score = filter_var($payload['score'] ?? null, FILTER_VALIDATE_INT);
 $wave = filter_var($payload['wave'] ?? null, FILTER_VALIDATE_INT);
 $timeline = $payload['timeline'] ?? null;
 
-if (($payload['contractId'] ?? '') !== $contractId || $initials === '' || strlen($initials) > 3 || $score === false || $score < 0 || $score > 1000000 || $wave === false || $wave < 1 || $wave > 4 || !is_array($timeline) || count($timeline) > 600) {
+if (($payload['contractId'] ?? '') !== $contractId || $initials === '' || strlen($initials) > 3 || $score === false || $score < 0 || $score > 50000000 || $wave === false || $wave < 1 || $wave > 4 || !is_array($timeline) || count($timeline) > 600) {
     duelRespond(422, ['error' => 'Invalid contract result']);
 }
 

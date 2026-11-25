@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404: Space Escape | Nicholas Tech LLC</title>
+    <!-- Upload this file as public_html/404.shtml. It forwards to the real game in /bstudio/,
+         so there is one copy of the game and one leaderboard to maintain. -->
+    <meta http-equiv="refresh" content="0; url=/bstudio/404.shtml">
+    <script>location.replace('/bstudio/404.shtml');</script>
+    <style>body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0a0a0f; color: #00f5ff; font-family: monospace; } a { color: #39ff14; }</style>
+</head>
+<body>
+    <p>Lost in space. <a href="/bstudio/404.shtml">Launch 404: Space Escape</a></p>
+</body>
+</html>
