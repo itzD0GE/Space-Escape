@@ -2,3 +2,9 @@
 *.log
 node_modules/
 dist/
+
+# runtime data
+api/data/*
+!api/data/.htaccess
+api/*.json
+deploy/*.zip

@@ -1,317 +1,341 @@
 # 404: Space Escape
 
-**Version:** 1.6.0  
-**Last Updated:** 2026-08-31
+**Version:** 2.1.0
+**Studio:** Nicholas Tech LLC (its first game)
+**Play it:** <https://texascabinetryco.com/bstudio/404.shtml>
 
-Space Escape is a wave-based browser shooter built as a playable 404 page. It supports single-player runs, a shared server leaderboard, and a short asynchronous Rival Contract queue.
+![Space Escape gameplay](docs/images/gameplay.png)
 
-The game has no package install or build step. Upload the game file, the `assets` folder, and the `api` folder together.
+Space Escape is a wave-based browser shooter that started life as a playable 404 page. You fly a small ship through endless waves of asteroids, drones and stranger things, pick a perk after every boss, and chase a score on shared leaderboards.
 
-## Install
+It runs on plain browser modules and PHP. There is **no build step and nothing to install on the server**: upload the files as they are.
 
-### Local game preview
+## Contents
 
-Open [404.shtml](404.shtml) in a modern browser to play single-player locally. PHP-backed leaderboard and Rival Contract features need a web server, so they do not work from `file://`.
+- [What's new in 2.1](#whats-new-in-21)
+- [How to play](#how-to-play)
+- [Controls](#controls)
+- [Enemies](#enemies)
+- [Bosses](#bosses)
+- [Perks, evolutions and ships](#perks-evolutions-and-ships)
+- [Modes](#modes)
+- [Scoring and balance](#scoring-and-balance)
+- [Achievements](#achievements)
+- [Settings](#settings)
+- [Run it locally](#run-it-locally)
+- [Deploy](#deploy)
+- [Show the game on every missing page (WordPress)](#show-the-game-on-every-missing-page-wordpress)
+- [How it is built](#how-it-is-built)
+- [API](#api)
+- [Tests](#tests)
+- [Release checklist](#release-checklist)
+- [License](#license)
 
-### Local PHP test server
+## What's new in 2.1
 
-From the project root, run:
+- **Two new special bosses:** Moolissa the Mad Cow (wave 5) and Lilo the Red Heeler (wave 7). After wave 7 they rotate with the Boba Colossus every sixth wave.
+- **Five new enemy types:** dart squadrons, flankers, snipers, mines and shield carriers.
+- **Biomes:** the star colour and nebula clouds change every three waves.
+- **Mouse lock:** the pointer stays inside the arena while you play. Esc releases it and pauses.
+- **Balance pass:** combo, no-hit streak, rapid fire and lives are capped; bosses have more health; the DVD jackpot no longer multiplies with your combo. A good run now has to earn its score.
+- **Leaderboard fix:** runs longer than 6 minutes were rejected by the server. They are accepted now. If the leaderboard can't be reached, the score is saved and sent again on the next visit.
+- **Every missing page on the site shows the game** (WordPress must-use plugin in `deploy/wordpress/`).
+- `SIM_VERSION` is now 3. Replays recorded with 2.0 no longer play back, because the rules changed.
+
+## How to play
+
+1. Clear the wave's kill quota (12 kills on wave 1, then 10 + 5 per wave). The boss arrives.
+2. Beat the boss. It enrages at half health and telegraphs its heavy attacks with a dashed line.
+3. Choose one of three perks.
+4. Fly a short safe intermission, then the next wave starts.
+
+**Dash** makes the ship briefly untouchable. **Grazing** (skimming past an enemy or bullet, or dashing through one) scores points and charges the **Nova Bomb**, which clears every bullet and damages everything on screen.
+
+**Damage:** a shield charge absorbs a hit. Without one you lose a life and your most recently gained weapon upgrade, then get about a second of immunity.
+
+**From wave 4:** elite enemies (shielded, swift, volatile, shooter) and wave mutators (Blitz, Swarm, Armored, Gold Rush, Solar Storm).
+
+**Biomes:** every three waves the sky changes colour, so you can tell at a glance how deep you are.
+
+![Wave 13 biome](docs/images/biome.png)
+
+## Controls
+
+| Action | Keyboard | Mouse | Touch | Gamepad |
+| --- | --- | --- | --- | --- |
+| Move | WASD / Arrows | Ship follows the pointer | Drag | Left stick / D-pad |
+| Fire | Space (hold) | Left button (hold) | Automatic while touching | A / RT |
+| Dash | Shift | Right click | DASH button | B / bumpers |
+| Nova Bomb | E | Middle click | BOMB button | X / Y |
+| Pause | P / Esc | Pause button | Pause button | Start |
+| Pick a perk | 1 / 2 / 3 | Click | Tap | |
+
+**Mouse lock.** When a run starts, the browser locks the pointer to the game and a crosshair shows where it is. The pointer cannot leave the arena. Press **Esc** to get the pointer back; that also pauses. Click the arena (or Resume) to lock it again. Menus, perk choices and the results screen release it automatically. Turn it off in Settings with "Lock mouse to the game".
+
+Fire, dash, bomb and pause keys can be remapped in Settings.
+
+## Enemies
+
+![Enemy types](docs/images/enemies.png)
+
+| Enemy | First wave | Looks like | What it does |
+| --- | --- | --- | --- |
+| Asteroid | 1 | Brown rock | Drifts towards you. Heavy ones take an extra hit and split when destroyed. |
+| Fast | 3 | Small glowing orb | Quick and fragile. |
+| Dart squadron | 2 | V of five pink arrows | Flies straight across the arena in formation. Get out of the lane or cut through it. |
+| Sniper | 3 | Red spinning diamond | Keeps its distance, flashes white for half a second, then fires a fast red shot at you. |
+| Flanker | 4 | Green arrow | Comes at you from an angle instead of head on. |
+| Mine | 5 | Orange spiked star | Slow. Blows up into a ring of 8 bullets if you get close, and also when you shoot it. |
+| Shield carrier | 6 | Gold hexagon | Every 3 seconds it shields the enemies around it. Kill it first. |
+| Elites | 4 | Coloured aura | Shielded, swift, volatile (explodes) or shooter versions of normal enemies. |
+
+From wave 6 there is a growing chance that two enemies spawn at once.
+
+## Bosses
+
+There are 20 named bosses with their own art and attack patterns, plus three special bosses on fixed waves:
+
+| Wave | Boss | Attacks | Reward |
+| --- | --- | --- | --- |
+| 3 | **Boba Colossus** | Tapioca pearl volleys | Pearl celebration, 10 seconds of bonus points |
+| 5 | **Moolissa the Mad Cow** | MILK SPRAY (7-shot fan), COWBELL! (14-bullet ring), STAMPEDE! (charges at you and drops calves) | MOOOOO! 10 donuts |
+| 7 | **Lilo the Red Heeler** | FETCH! (three balls that bounce off the walls), WOOF! (10-bullet ring), a lunge. She circles you like she is herding sheep. | GOOD GIRL, LILO! 16 bones to collect |
+
+After wave 7 the three special bosses take turns every sixth wave. Every boss enrages at half health, and every third boss cycle after wave 8 brings an elite version with a new title.
+
+| Boba Colossus | Moolissa the Mad Cow | Lilo the Red Heeler |
+| --- | --- | --- |
+| ![Boba Colossus](docs/images/boss-boba.png) | ![Moolissa](docs/images/boss-cow.png) | ![Lilo](docs/images/boss-lilo.png) |
+
+Moolissa is drawn live rather than from a picture, so her mismatched eyes can spin in opposite directions. When she enrages they spin faster and turn red:
+
+![Moolissa enraged](docs/images/boss-cow-enraged.png)
+
+Lilo is the red heeler from [Nicholastrading.com](https://nicholastrading.com).
+
+## Perks, evolutions and ships
+
+After every boss you pick one of three perks. Rare perks show up less often.
+
+| Perk | Effect | Max |
+| --- | --- | --- |
+| Rapid Fire | Fire faster | 8 stacks |
+| Spread Fire | Adds a forward shot, up to four | 3 |
+| Piercing Rounds | Shots go through an extra enemy | 3 |
+| Thruster Boost | Move faster with every control scheme | 4 |
+| Salvage Magnet | Pull in items from farther away | 4 |
+| Reinforced Hull | Extra life now (5 lives at most) | 2 |
+| Combo Mastery | Higher combo cap and longer combo window | 4 |
+| Score Surge | More points for everything | 5 |
+| Afterburner | Dash recharges 20% faster | 2 |
+| Graze Engine | Grazes charge the bomb 40% faster | 2 |
+| Auto-Fire | Fires without holding the trigger | 1 |
+| Vector Thrusters (rare) | Shots fire the way you move | 1 |
+| Orbital Cannon (rare) | Rotating cannon replaces your guns | stacks |
+| Chain Lightning (rare) | A kill arcs to a nearby enemy | 1 |
+| Homing Rounds (rare) | Shots chase the nearest enemy | 1 |
+
+**Evolutions** switch on automatically while you hold the right perks:
+
+| Evolution | Needs | Effect |
+| --- | --- | --- |
+| Storm Lance | Chain Lightning + Piercing 2 | Chain jumps to three targets |
+| Swarm Missiles | Homing + Spread 2 | Harder turns, burst on impact |
+| Coolant Loop | Rapid Fire 3 + Thruster 2 | No overheating |
+| Jackpot Protocol | Combo 2 + Score Surge 2 | Longer combos, triple graze score |
+
+**Ships** are picked in the Hangar:
+
+![Hangar](docs/images/hangar.png)
+
+| Ship | Unlock |
+| --- | --- |
+| Vanguard | Start ship. Balanced, 3 lives. |
+| Dart | Reach wave 5 |
+| Bastion | Score 250,000 |
+| Wraith | Graze 150 times in total |
+
+## Modes
+
+![Main menu](docs/images/menu.png)
+
+- **Single Player:** endless waves. All-Time and This Week leaderboards.
+- **Daily Challenge:** one seed per UTC day, so everyone meets the same waves. It has its own board, and you race a ghost of the day's best run.
+- **Rival Contract:** a three-wave score race on identical waves. Every 12 kills sends an attack squad to your rival. If nobody is waiting, you fly against the ACE bot, which plays the same seed live.
+- **Records:** your best score, best wave, lifetime stats and achievements.
+
+The menu shows the top three pilots and the Season 1 Legend (the best score from version 1).
+
+## Scoring and balance
+
+Points come from kills, grazes, bosses, donuts and the DVD logo, multiplied by the wave, your combo and your no-hit streak. Version 2.1 tightened the numbers after a playtest reached 3 million by wave 15:
+
+| Rule | 2.1 value | Why |
+| --- | --- | --- |
+| No-hit streak multiplier | Capped at 4 | It used to climb to 12 |
+| Rapid Fire stacks | Capped at 8 | Unlimited fire rate melted bosses |
+| Lives | Capped at 5. Extra life pickups at the cap give 2,000 × wave multiplier points instead | Stacked lives removed all risk |
+| Boss health | Base × (1.5 + 0.6 × wave) | Late bosses died in 1 to 10 seconds |
+| DVD jackpot | No longer multiplied by combo | One catch was worth more than a wave |
+| Difficulty director | Speeds up spawns by up to 90% while you are unhurt, backs off after a hit | Keeps strong runs under pressure |
+
+All tuning numbers live in `TUNE` at the top of `js/data.js`.
+
+## Achievements
+
+| Achievement | How |
+| --- | --- |
+| First Blood | Defeat a boss |
+| Tea Time | Splash the Boba Colossus |
+| Udder Chaos | Defeat Moolissa the Mad Cow |
+| Good Girl | Win a game of fetch against Lilo |
+| Screensaver | Catch the DVD logo |
+| The Corner | Land a perfect DVD corner catch |
+| Untouchable | Clear three waves in a row without damage |
+| Deep Space | Reach wave 10 |
+| Six Figures / Half a Million / Legend | Score 100,000 / 500,000 / 1,000,000 |
+| Evolution | Unlock a weapon evolution |
+| Thread the Needle | Graze 50 times in one run |
+| Clean Slate | Detonate a Nova Bomb |
+| Contract Killer | Win a Rival Contract |
+| Daily Driver | Finish a Daily Challenge run |
+
+## Settings
+
+![Settings](docs/images/settings.png)
+
+Music and effects volume, mute, reduced motion, screen shake, high-contrast bullets, mouse lock, touch scheme (direct or relative drag) and key remapping. Settings, stats and achievements are stored in the browser (`localStorage`), so they stay on that device.
+
+The game works on phones too, and can be installed as an app from the browser menu:
+
+<img src="docs/images/mobile.png" alt="Phone layout" width="300">
+
+## Run it locally
 
 ```powershell
 php -S localhost:8000
 ```
 
-Then open `http://localhost:8000/404.shtml`.
+Open `http://localhost:8000/404.shtml`. PHP 8.0 or later. Opening the file straight from disk (`file://`) does not work, because browsers do not load modules that way.
 
-PHP 8.0 or later is recommended. This enables the same relative API paths used in production.
+On `localhost` only, `window.__game` is exposed in the browser console:
 
-## Website Hosting
-
-Upload the complete project structure to the desired web directory. For example, to serve the game from `/bstudio/`, upload this exact tree:
-
-```text
-public_html/
-`- bstudio/
-   |- 404.shtml
-   |- assets/
-   |  |- player-ship-tier-1.png
-   |  |- player-ship-tier-2.png
-   |  |- player-ship-tier-3.png
-   |  |- player-ship-tier-4.png
-   |  |- player-ship-tier-5.png
-   |  |- player-ship-tier-6.png
-   |  |- boba-tea-boss.svg
-   |  |- donut-matcha.png
-   |  |- donut-cinnamon.png
-   |  |- donut-vanilla.png
-   |  |- donut-strawberry.png
-   |  |- donut-blueberry.png
-   |  |- nebula-bg.jpg
-   |  `- junk-*.png
-   `- api/
-      |- highscore.php
-      |- duel.php
-      `- duel-queue.php
+```js
+window.__game.auto(true)   // the autopilot flies the run
+window.__game.sim          // the live simulation (wave, score, enemies, player)
 ```
 
-Requirements:
+## Deploy
 
-1. Preserve the `assets/` and `api/` directory names and contents.
-2. Enable PHP for the website directory.
-3. Make `api/` writable by PHP. Start with permissions `755`; use `775` only when required by the host.
-4. Verify `https://your-domain.example/bstudio/api/highscore.php` returns JSON rather than a 404 or HTML error page.
-5. Configure the host's custom 404 page to serve `404.shtml` when using the game as a site-wide 404 page.
-
-The API automatically creates these runtime data files inside `api/`:
+Upload this tree to the web folder that serves the game (live: `public_html/bstudio/` on the GreenGeeks cPanel account):
 
 ```text
-leaderboard.json   # Shared top-three scores
-duels.json         # Recent completed Rival Contract runs
-duel-queue.json    # Pending contract request and short-lived matches
+bstudio/
+|- 404.shtml              # page, styles, menus
+|- manifest.webmanifest   # install metadata
+|- sw.js                  # offline cache (bump CACHE in it on every release)
+|- js/                    # the game modules
+|- assets/                # ships, donuts, boss art, Lilo, background, icons
+`- api/                   # PHP endpoints
+   |- .htaccess           # blocks direct download of data files
+   `- data/               # runtime data, created and filled by the API
+      `- .htaccess        # denies all web access
 ```
 
-Do not create or edit these data files by hand. Do not upload `dist/` or `node_modules/`; neither is needed in production.
+1. Keep the folder names. All paths are relative to `404.shtml`.
+2. `api/` and `api/data/` must be writable by PHP (`755`, or `775` if the host needs it).
+3. Check that `…/api/game.php?a=home` returns JSON.
+4. To make the site root's `/404.shtml` show the game too, upload `deploy/root-404.shtml` there **renamed to `404.shtml`**. It forwards to `/bstudio/404.shtml`, so there is one copy of the game and one leaderboard.
+5. Do not upload `test/`, `tools/`, `deploy/`, `docs/` or `node_modules/`.
+6. **Do not touch the other files in `bstudio/`** on the live server (`.git`, `config`, `modules`, `pdfs`, `web-form`, its `.htaccess`, dashboard backups). They belong to another application.
 
-## Project File Tree
+**Caching.** The host sends long cache headers on JS files. The service worker fetches with `no-cache`, so a release reaches players once `sw.js` itself is refreshed. Always bump `CACHE` in `sw.js` when you release, and after uploading, check the live files with a cache-busting query (`?v=123`).
 
-```text
-Space-Escape/
-|- 404.shtml                 # Full game client: HTML, CSS, JavaScript
-|- README.md                  # This game bible
-|- assets/                    # All browser-rendered game artwork
-|  |- player-ship-tier-*.png  # Six progressive player ship appearances
-|  |- boba-tea-boss.svg       # Wave 3 Boba Colossus art
-|  |- donut-*.png             # Flavor-coded pickup artwork
-|  `- junk-*.png              # Safe intermission debris
-`- api/                       # PHP endpoints and generated JSON storage
-   |- highscore.php            # Shared global leaderboard
-   |- duel.php                 # Completed Rival Contract run storage
-   `- duel-queue.php           # Request/accept contract matchmaking
+## Show the game on every missing page (WordPress)
+
+`texascabinetryco.com` runs WordPress, which answers missing pages with its own theme page. `deploy/wordpress/space-escape-404.php` replaces that with the game:
+
+1. Upload it to `public_html/wp-content/mu-plugins/` (create the folder if it is missing). Must-use plugins are always on and do not appear in the Plugins list.
+2. Visit any missing page, for example `/this-page-does-not-exist`. The game appears.
+
+What it does:
+
+- Only acts on real "page not found" responses for pages (requests that accept HTML and have no file extension). Missing images, scripts and bot probes still get the normal 404.
+- Keeps the **404 status**, so search engines still see the page as missing.
+- Reads `bstudio/404.shtml` and adds `<base href="/bstudio/">` so its scripts, art and API calls load from the real folder.
+- If the game file is missing, it falls back to the theme's 404 page.
+
+To undo it, delete the file.
+
+## How it is built
+
+| File | Role |
+| --- | --- |
+| `js/sim.js` | The whole game as a fixed 60-ticks-per-second simulation. No DOM, no clock, no `Math.random`. Enemies, bosses (including the cow and Lilo), scoring, the difficulty director. |
+| `js/rng.js` | Seeded random numbers and deterministic trigonometry |
+| `js/data.js` | Perks, evolutions, ships, mutators, achievements, tuning numbers (`TUNE`) |
+| `js/bosses.js` | Boss table and inline SVG art |
+| `js/bot.js` | Autopilot for attract mode and the ACE rival |
+| `js/replay.js` | Input recording, playback and verification |
+| `js/render.js` | Canvas renderer: sprites, hand-drawn enemies, the cow's eyes, biomes, particles |
+| `js/audio.js` | Synthesized effects and scheduled, layered music |
+| `js/input.js` | Keyboard, mouse (with pointer lock), touch, gamepad |
+| `js/meta.js` | Local profile: settings, unlocks, achievements |
+| `js/net.js`, `js/ui.js`, `js/main.js` | API calls, DOM helpers, game loop and menus |
+| `sw.js` | Service worker for offline play |
+
+Because the simulation is deterministic, the same seed and inputs always give the same run. That one property powers replays, ghosts, the bot rival and score verification. If you change game rules, bump `SIM_VERSION` in `js/sim.js` so old replays are not checked against new rules.
+
+## API
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET api/game.php?a=home` | Top 10 of each board, daily seed, lore, Season 1 champion |
+| `GET api/game.php?a=board&b=all\|weekly\|daily` | Top 100 of one board |
+| `GET api/game.php?a=ghost&b=daily` | Best stored replay of a board |
+| `POST api/game.php {a:"start", mode}` | Signed run token and seed |
+| `POST api/game.php {a:"submit", …}` | Score, stats and replay for a finished run |
+| `api/duel-queue.php`, `api/duel.php` | Rival Contract queue, live progress, attacks, results |
+
+Data is stored as JSON files in `api/data/`, written under a file lock.
+
+### Anti-cheat
+
+- A score needs a server-signed run token, and a token works once. Tokens last 6 hours.
+- The server rejects runs that are impossible for the time elapsed (more game time than wall time, or more points than the wave and duration allow).
+- Submissions and run starts are rate limited per address (addresses are stored hashed).
+- Top-10 entries keep their input replay. `node tools/verify-replay.mjs <folder>` re-simulates each one and reports any whose score does not match. Run it on a copy of `api/data` when a score looks wrong.
+- If a submission is refused, the game says why. If the server can't be reached, the score is kept in the browser and sent again next time.
+
+These checks stop casual tampering. They are not proof against a determined attacker.
+
+### AI daily lore (optional)
+
+The mission briefing on the menu and the boss taunts can be written fresh each day by Claude. Without a key the game uses built-in lines.
+
+1. Copy `api/config.example.php` to `api/data/config.php` on the server and add an Anthropic API key.
+2. Recommended: add a daily cron job, `php /home/<account>/public_html/bstudio/api/lore.php`.
+
+The call happens at most once a day and is cached in `api/data/`. The text is cosmetic and never affects gameplay or scores.
+
+## Tests
+
+```powershell
+node test/sim.test.mjs      # determinism, replay round-trip, autopilot progression table
+php -S localhost:8000       # in one terminal
+node test/api.test.mjs      # in another: tokens, submission, anti-cheat, ghost, rival queue
 ```
 
-## Controls
-
-| Action | Desktop | Touch |
-| --- | --- | --- |
-| Move | WASD or Arrow keys | Drag in the arena |
-| Fire | Space or click | Tap |
-| Pause | P, Escape, or pause button | Pause button |
-| Mute | M or mute button | Mute button |
-
-A minimal cursor glint marks the mouse within the arena without a long visual trail.
-
-## Core Game Flow
-
-1. Choose **Single Player** or **Rival Contract**.
-2. Clear the normal enemy quota for the wave.
-3. Defeat the boss. A wave cannot complete while its boss lives.
-4. Watch the boss defeat effects and a `3, 2, 1, GO!` transition.
-5. Choose one perk.
-6. Fly through a harmless debris intermission.
-7. The next-wave countdown begins.
-
-Each wave switches to the next player ship appearance tier, capped at tier 6.
-
-## Combat, Lives, and Shields
-
-- A run starts with 3 lives.
-- Enemy contact and enemy projectiles damage the player.
-- A 1UP adds one life.
-- Reaching 0 lives ends the run.
-- Boss projectiles are enemy-owned and cannot damage their own boss.
-
-### Shield Protection
-
-A shield absorbs incoming enemy contact or bullets first. Each shielded hit consumes one shield charge and preserves both lives and weapons.
-
-### Unshielded Damage
-
-An unshielded hit costs one life and resets weapon upgrades to the base forward shot. These reset:
-
-- Rapid Fire and temporary Multi-Shot
-- Spread Fire and Piercing Rounds
-- Auto-Fire and Vector Thrusters
-- Orbital Cannon and its stacks
-- Chain Lightning and Homing Rounds
-
-Mobility, pickup range, extra hull lives, combo improvements, and score bonuses remain active.
-
-### Heat
-
-Rapid Fire can stack into high heat. Critical heat causes damage and follows the same unshielded weapon-reset rule.
-
-## Donut Pickups
-
-The former gem pickups are transparent 3D donut assets. Their image files are in [assets/](assets/); their pickup mechanics are unchanged.
-
-| Donut | Effect |
-| --- | --- |
-| Matcha | Salvage score collectible |
-| Cinnamon | Rapid Fire stack |
-| Vanilla | Shield charges |
-| Strawberry | 1UP |
-| Blueberry | Temporary Multi-Shot |
-
-All donut glows use `drop-shadow`, so the glow follows the transparent donut silhouette rather than drawing a square around the item.
-
-### Japanese Sweets Pickups (Temporary Buffs)
-
-These pickups are drawn as inline SVG art (no separate image files) and grant a short-lived buff. Each shows a HUD buff tag for its full duration and clears itself automatically when it expires.
-
-| Treat | Effect | Duration |
-| --- | --- | --- |
-| Mochi | Doubles fire rate (Mochi Overdrive) | 10 seconds |
-| Dango | Doubles all points earned (Dango Frenzy) | 12 seconds |
-| Sushi | Greatly increases pickup radius (Sushi Magnet) | 10 seconds |
-| Taiyaki | Full damage immunity (Taiyaki Phase) | 5 seconds |
-
-## Perks and Weapons
-
-After each cleared wave, the player chooses a permanent perk from the available pool.
-
-| Perk | Effect |
-| --- | --- |
-| Rapid Fire | Improves base fire rate |
-| Spread Fire | Adds forward shots, up to four |
-| Piercing Rounds | Lets shots pass through more enemies |
-| Thruster Boost | Increases movement speed |
-| Salvage Magnet | Increases pickup radius |
-| Reinforced Hull | Adds one life |
-| Combo Mastery | Raises combo cap and combo window |
-| Score Surge | Increases all points earned |
-| Auto-Fire | Enables trigger-controlled continuous firing |
-| Vector Thrusters | Fires in the movement direction |
-| Orbital Cannon | Replaces the current weapon set with rotating fire |
-| Chain Lightning | A kill arcs to a nearby enemy |
-| Homing Rounds | Shots lock onto the nearest enemy and pursue it until it dies or leaves range |
-
-Orbital Cannon is a weapon swap. Its first selection clears other weapons and starts one rotating stream. Later Orbital Cannon selections add streams, up to four.
-
-Spread Fire and temporary Multi-Shot stacks combine, but total simultaneous shots are capped at 7.
-
-## Waves and Bosses
-
-Enemy speed, spawn pressure, and wave quotas increase over time. Standard boss patterns include splitter, tracking, drone, gravity, meteor, and arc attacks. Later waves can spawn stronger elite versions.
-
-### Splitting Asteroids
-
-Single-player normal waves include standard and heavy asteroids. Standard asteroids do not split when destroyed. Heavy asteroids render at a larger size, take an additional hit, and break into two medium fragments, which themselves break into small fragments when destroyed. Fragments burst outward from the impact point for a brief moment before homing in on the player, rather than beelining immediately. Rival Contract does not use this random split variation.
-
-### Wave 3: Boba Colossus
-
-Wave 3 features the Boba Colossus, a fast, angry boba-tea boss with a straw. It fires three boba pearls in a fan volley. The pearls are enemy bullets and damage the player on contact.
-
-When defeated, the Boba Colossus starts a 10-second celebration before the perk screen appears: the tea and tapioca pearls burst outward like an explosion, alongside a splash announcement banner. The ship can still move during the celebration, and collectible pearls award bonus score if caught before they drift off-screen and vanish.
-
-### DVD Corner Easter Egg
-
-Flying the ship into any of the four arena corners releases a bouncing DVD logo, a nod to the classic screensaver meme.
-
-- The corner hit itself awards a small style bonus and has a 10-second cooldown, but only one DVD logo release is allowed per wave.
-- The logo bounces around the arena for 15 seconds. Touching it with the ship catches it: catching it awards a jackpot bonus, scaled by the wave and combo multipliers, plus a random weapon bonus (Shield, Multi-Shot, or Rapid Fire).
-- Catching it within a third of a second of it bouncing off an exact corner, the meme moment, upgrades the payout to a "PERFECT CATCH" worth roughly double.
-- If the logo is not caught before its timer runs out, it escapes and the wave gets no reward from it.
-
-### Safe Intermission
-
-After a perk is selected, the player flies briefly without hostile spawns. Harmless local debris such as spacecraft parts, a rocket, phone, radio, robot, and satellite can float through the arena. These never cause damage.
-
-## Audio
-
-All sound effects and music are synthesized live with the Web Audio API. There are no external audio files to host, download, or license.
-
-- **Sound effects** (shoot, enemy hit, damage, collectible, powerup, wave clear, easter egg) are built from layered oscillators, pitch sweeps, and filtered white-noise bursts rather than static tones, giving impacts a noise-based "crunch" and the laser shot a multi-layer zap with a sub-bass thump for weight.
-- **Music** (ambient loop, per-theme boss themes) is a simple procedural note sequencer using the same oscillator engine.
-- Every sound is routed through a `PannerNode` positioned from the source's on-screen X position, so effects pan left/right based on where they happen in the arena.
-- The mute toggle and master gain control apply globally to both music and effects.
-
-## Scoring
-
-Points come from enemy kills, bosses, salvage, near misses, and wave bonuses.
-
-- **Combo:** quick consecutive kills increase the combo multiplier.
-- **Near miss:** narrowly avoiding a non-boss enemy awards a bonus.
-- **No-hit clear:** a damage-free wave earns a streak-based bonus.
-- **Score Surge:** increases all points earned.
-
-Score, wave, and near-miss multipliers are bounded in the client to prevent invalid states from producing unrealistic values.
-
-## Shared Leaderboard
-
-The standard leaderboard is server-authoritative. It does not use browser score storage as a fallback.
-
-1. A qualifying top-three score asks for up to three initials.
-2. The client posts `initials`, `score`, and `wave` to `api/highscore.php`.
-3. The endpoint stores the top three entries in `api/leaderboard.json`.
-4. The page displays the shared top-three pilots with initials, score, and wave reached.
-
-## Rival Contract
-
-Rival Contract is a short request/accept 1v1-style challenge built for ordinary PHP website hosting. It needs no WebSockets or persistent server process.
-
-### How Queueing Works
-
-1. Player One chooses **Rival Contract**, enters initials, and sees **Request Contract** when no request is waiting.
-2. Player One selects it. `api/duel-queue.php` creates a pending request that lives for 60 seconds.
-3. Player Two opens Rival Contract during that window. The queue returns Player One's initials and shows **Accept Contract**.
-4. Player Two accepts. The API creates a short-lived match record and clears the pending request.
-5. Player One polls their request ID and sees **Opponent Joined**.
-6. Both players see the matchup intro, for example `AAA VS BBB`, followed by the normal `3, 2, 1, GO!` countdown.
-7. If no one accepts within 60 seconds, the request is cancelled and Player One sees `NO OPPONENT JOINED. TRY AGAIN.`
-
-While the queue modal is open, the demo arena freezes and the live Wave/HUD display is hidden. Queueing does not start single-player mode.
-
-### Contract Play and Result Storage
-
-A Rival Contract has a Wave 3 target. During an active match, each player publishes their score and wave once per second to `api/duel-queue.php`; the compact rival HUD displays the opponent's latest shared score. The client also records a score checkpoint every second and submits the completed result to `api/duel.php` when the player loses or clears Wave 3. It then shows a dedicated versus result screen with both initials, both scores, and a win, tie, or loss outcome. That endpoint validates basic input and retains the latest 50 daily results in `api/duels.json`.
-
-The current mode provides request/accept matchmaking, matchup presentation, live score sharing through short PHP polls, and result recording. Deterministic shared enemy spawns remain a future enhancement; the mode does not require WebSockets or a persistent server process.
-
-## PHP API Reference
-
-All client requests are relative to the game file. If the game is installed at `/bstudio/`, requests resolve under `/bstudio/api/`.
-
-### `api/highscore.php`
-
-| Method | Purpose |
-| --- | --- |
-| `GET` | Returns the global high score and top-three leaderboard |
-| `POST` | Accepts initials, score, and wave for a leaderboard entry |
-
-### `api/duel-queue.php`
-
-| Method | Purpose |
-| --- | --- |
-| `GET` | Returns the daily contract and any pending request |
-| `GET ?requestId=<id>` | Lets Player One poll for the accepted match |
-| `POST request` | Creates a pending request with Player One's initials |
-| `POST accept` | Lets Player Two accept the request and create a match |
-| `POST progress` | Stores a player's current score and wave, then returns the updated match |
-| `POST cancel` | Removes Player One's pending request |
-
-### `api/duel.php`
-
-| Method | Purpose |
-| --- | --- |
-| `GET` | Returns the latest completed result for the current daily contract |
-| `POST` | Stores a completed contract's initials, score, wave, and score timeline |
-
-All API writes use exclusive file locks to reduce JSON corruption under simultaneous requests.
-
-## Asset Guide
-
-Keep file names and paths stable when replacing art:
-
-- `player-ship-tier-1.png` through `player-ship-tier-6.png`: player ship progression.
-- `boba-tea-boss.svg`: Wave 3 boss art.
-- `donut-*.png`: flavor-coded pickups.
-- `nebula-bg.jpg`: deep-background night-sky photo darkened behind the arena and stars. Keep this file web-sized (a few hundred KB); do not swap in a multi-megabyte original, since the game has no build/compression step.
-- `junk-*.png`: intermission debris.
-
-Use transparent PNG or SVG files. Avoid opaque rectangular backgrounds to prevent square artifacts around objects and glows.
-
-The arena background layers a dark scrim over `nebula-bg.jpg` for a mostly black, milky-way-at-night look that keeps foreground gameplay and text readable.
+The API test writes into `api/data/`. Clear its JSON files afterwards so test scores are never uploaded.
+
+## Release checklist
+
+1. Bump `GAME_VERSION` in `js/data.js` and `CACHE` in `sw.js`. Bump `SIM_VERSION` if game rules changed.
+2. Run both tests.
+3. Play a run locally.
+4. Upload the changed files to `bstudio/` and check them live with a cache-busting query.
+5. Update this README and its screenshots (`docs/images/`).
 
 ## License
 
-Project code is MIT licensed. Bundled and replacement artwork remains subject to its source license; Kenney assets are CC0.
+Project code is MIT licensed. Bundled and replacement artwork remains subject to its source license; Kenney assets are CC0. Lilo's portrait belongs to Nicholas Trading.

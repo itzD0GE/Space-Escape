@@ -1,0 +1,7 @@
+# Runtime data and helper files are not for direct download.
+<FilesMatch "\.(json|lock)$">
+    Require all denied
+</FilesMatch>
+<FilesMatch "^(lib|config\.example)\.php$">
+    Require all denied
+</FilesMatch>

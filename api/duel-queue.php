@@ -62,11 +62,12 @@ if (!is_array($payload)) {
 }
 
 $action = (string) ($payload['action'] ?? '');
-$initials = strtoupper(preg_replace('/[^A-Z0-9]/', '', (string) ($payload['initials'] ?? '')));
+$initials = substr(preg_replace('/[^A-Z0-9]/', '', strtoupper((string) ($payload['initials'] ?? ''))), 0, 3);
 $requestId = preg_replace('/[^a-f0-9]/', '', (string) ($payload['requestId'] ?? ''));
 $role = (string) ($payload['role'] ?? '');
 $score = filter_var($payload['score'] ?? null, FILTER_VALIDATE_INT);
 $wave = filter_var($payload['wave'] ?? null, FILTER_VALIDATE_INT);
+$sent = filter_var($payload['sent'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 9999]]);
 if (!in_array($action, ['request', 'accept', 'cancel', 'progress'], true)) {
     queueRespond(422, ['error' => 'Invalid queue action']);
 }
@@ -116,7 +117,7 @@ if ($action === 'request') {
     $data['request'] = null;
     $response = ['contract' => $contract, 'match' => $match];
 } elseif ($action === 'progress') {
-    if ($requestId === '' || !in_array($role, ['playerOne', 'playerTwo'], true) || $score === false || $score < 0 || $score > 1000000 || $wave === false || $wave < 1 || $wave > 4) {
+    if ($requestId === '' || !in_array($role, ['playerOne', 'playerTwo'], true) || $score === false || $score < 0 || $score > 50000000 || $wave === false || $wave < 1 || $wave > 4) {
         flock($file, LOCK_UN);
         fclose($file);
         queueRespond(422, ['error' => 'Invalid contract progress']);
@@ -135,6 +136,8 @@ if ($action === 'request') {
     }
     $data['matches'][$matchIndex][$role]['score'] = $score;
     $data['matches'][$matchIndex][$role]['wave'] = $wave;
+    // attack squads this pilot has earned so far; the rival's client spawns the difference
+    $data['matches'][$matchIndex][$role]['sent'] = $sent === false ? 0 : $sent;
     $data['matches'][$matchIndex][$role]['updatedAt'] = time();
     $response = ['contract' => $contract, 'match' => $data['matches'][$matchIndex]];
 } else {
