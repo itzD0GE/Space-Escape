@@ -325,7 +325,7 @@ async function refreshHome() {
 }
 
 // ---------- rival contract ----------
-const duelUi = { mode: 'request', requestId: null, waiting: false };
+const duelUi = { mode: 'request', requestId: null, key: null, waiting: false };
 
 async function openDuel() {
   $('duelInitialsInput').value = profile.initials; $('duelStatus').textContent = 'CHECKING CONTRACT QUEUE...';
@@ -343,35 +343,35 @@ async function duelGo() {
   const initials = duelInitials();
   if (duelUi.mode === 'accept' && duelUi.requestId) {
     const r = await net.queuePost({ action: 'accept', requestId: duelUi.requestId, initials });
-    if (r && r.match) launchDuel(initials, r.match, 'playerTwo'); else openDuel();
+    if (r && r.match) launchDuel(initials, r.match, 'playerTwo', r.key); else openDuel();
     return;
   }
   const r = await net.queuePost({ action: 'request', initials });
   if (!r || !r.request) { $('duelStatus').textContent = 'CONTRACT REQUEST FAILED. TRY THE BOT.'; return; }
-  duelUi.requestId = r.request.id; duelUi.waiting = true;
+  duelUi.requestId = r.request.id; duelUi.key = r.key; duelUi.waiting = true;
   $('duelAcceptButton').disabled = true;
   const t0 = Date.now();
   while (duelUi.waiting && Date.now() - t0 < 60000) {
     $('duelStatus').textContent = `REQUEST SENT. WAITING FOR OPPONENT... ${Math.ceil((60000 - (Date.now() - t0)) / 1000)}`;
     const q = await net.queue(duelUi.requestId);
-    if (q && q.match) { duelUi.waiting = false; $('duelAcceptButton').disabled = false; launchDuel(initials, q.match, 'playerOne'); return; }
+    if (q && q.match) { duelUi.waiting = false; $('duelAcceptButton').disabled = false; launchDuel(initials, q.match, 'playerOne', duelUi.key); return; }
     await new Promise((res) => setTimeout(res, 3000));
   }
   $('duelAcceptButton').disabled = false;
   if (!duelUi.waiting) return;
   duelUi.waiting = false;
   $('duelStatus').textContent = 'NO OPPONENT JOINED. TRY AGAIN OR FLY THE BOT.';
-  net.queuePost({ action: 'cancel', requestId: duelUi.requestId }); duelUi.requestId = null;
+  net.queuePost({ action: 'cancel', requestId: duelUi.requestId, key: duelUi.key }); duelUi.requestId = null;
 }
 function closeDuel() {
-  if (duelUi.waiting && duelUi.requestId) net.queuePost({ action: 'cancel', requestId: duelUi.requestId });
+  if (duelUi.waiting && duelUi.requestId) net.queuePost({ action: 'cancel', requestId: duelUi.requestId, key: duelUi.key });
   duelUi.waiting = false; duelUi.requestId = null; $('duelAcceptButton').disabled = false;
   show('duelModal', false);
 }
-function launchDuel(initials, match, role) {
+function launchDuel(initials, match, role, key) {
   const rival = role === 'playerOne' ? match.playerTwo : match.playerOne;
   show('duelModal', false);
-  begin({ mode: 'duel', seed: hashSeed(match.contract.seed), targetWave: match.contract.targetWave, initials, role, matchId: match.requestId, contractId: match.contract.id, rival: { initials: rival.initials, score: 0 }, intro: [initials, rival.initials] });
+  begin({ mode: 'duel', seed: hashSeed(match.contract.seed), targetWave: match.contract.targetWave, initials, role, key, matchId: match.requestId, contractId: match.contract.id, rival: { initials: rival.initials, score: 0 }, intro: [initials, rival.initials] });
 }
 function duelBot() {
   I.lock();
@@ -393,7 +393,7 @@ function rivalHud() {
 async function syncDuel() {
   run.timeline.push({ t: Math.floor(sim.tick / HZ), score: sim.score });
   if (!run.matchId) return;
-  const r = await net.queuePost({ action: 'progress', requestId: run.matchId, role: run.role, score: sim.score, wave: sim.wave, sent: sim.attacksOut });
+  const r = await net.queuePost({ action: 'progress', requestId: run.matchId, role: run.role, key: run.key, score: sim.score, wave: sim.wave, sent: sim.attacksOut });
   if (!r || !r.match || !run || !run.matchId) return;
   const rival = run.role === 'playerOne' ? r.match.playerTwo : r.match.playerOne;
   if (!rival) return;
@@ -403,7 +403,7 @@ async function syncDuel() {
 }
 function finishDuel(completed, won, rivalScore) {
   if (run.matchId) {
-    net.queuePost({ action: 'progress', requestId: run.matchId, role: run.role, score: sim.score, wave: Math.min(4, sim.wave), sent: sim.attacksOut });
+    net.queuePost({ action: 'progress', requestId: run.matchId, role: run.role, key: run.key, score: sim.score, wave: Math.min(4, sim.wave), sent: sim.attacksOut });
     net.duelResult({ contractId: run.contractId, initials: run.initials, score: sim.score, wave: Math.min(4, sim.wave), timeline: run.timeline.slice(0, 600) });
   }
   const tied = completed && sim.score === rivalScore;

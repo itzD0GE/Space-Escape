@@ -125,7 +125,7 @@ $seconds = $ticks / 60;
 // Plausibility bounds. They stop casual tampering (instant or impossible scores); the stored
 // replay is the real proof and can be re-simulated with tools/verify-replay.mjs.
 $tooFast = $seconds > $elapsed + 5 || $seconds < ($wave - 1) * 8;
-$tooMuch = $score > 300 + $seconds * 3000 * (1 + $wave);
+$tooMuch = $score > 300 + $seconds * 1200 * (1 + $wave);
 if ($elapsed < 0 || $elapsed > TOKEN_MAX_AGE || $tooFast || $tooMuch) {
     respond(422, ['error' => 'Run rejected by the anti-cheat check']);
 }

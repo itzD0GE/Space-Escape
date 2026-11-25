@@ -53,12 +53,16 @@ assert.equal((await get('game.php?a=board&b=daily')).body.entries.length >= 1, t
 
 // data files must not be downloadable (enforced by .htaccess on Apache/LiteSpeed; PHP's dev server ignores it)
 // rival contract: request, accept, progress with attacks
-await post('duel-queue.php', { action: 'cancel', requestId: ((await get('duel-queue.php')).body.request || {}).id || '' });
 const req = await post('duel-queue.php', { action: 'request', initials: 'one' });
 assert.equal(req.status, 200, JSON.stringify(req.body));
 const acc = await post('duel-queue.php', { action: 'accept', requestId: req.body.request.id, initials: 'two' });
 assert.equal(acc.body.match.playerOne.initials, 'ONE');
-const prog = await post('duel-queue.php', { action: 'progress', requestId: req.body.request.id, role: 'playerOne', score: 1234, wave: 2, sent: 3 });
+assert.ok(!('key' in req.body.request) && !acc.body.match.keys && /^[0-9a-f]{32}$/.test(req.body.key), 'player keys are never public');
+const spoof = await post('duel-queue.php', { action: 'progress', requestId: req.body.request.id, role: 'playerOne', key: acc.body.key, score: 9, wave: 2, sent: 50 });
+assert.equal(spoof.status, 403, 'a player cannot post progress for the other seat');
+const prog = await post('duel-queue.php', { action: 'progress', requestId: req.body.request.id, role: 'playerOne', key: req.body.key, score: 1234, wave: 2, sent: 3 });
+const back = await post('duel-queue.php', { action: 'progress', requestId: req.body.request.id, role: 'playerOne', key: req.body.key, score: 1300, wave: 2, sent: 1 });
+assert.equal(back.body.match.playerOne.sent, 3, 'attack count never goes down');
 assert.equal(prog.body.match.playerOne.sent, 3, 'attack count is shared with the rival');
 assert.ok(/^[0-9a-f]{16}$/.test(prog.body.contract.seed), 'contract carries the shared seed');
 
