@@ -1,5 +1,6 @@
 // Server calls. Every one fails soft: offline or file:// play still works, just without boards.
-const API = 'api/';
+// The radio site's /api/ belongs to the radio Worker (and Cloudflare runs no PHP), so its copy uses the main server.
+const API = location.hostname === 'radio.nicholastrading.com' ? 'https://texascabinetryco.com/bstudio/api/' : 'api/';
 
 async function call(path, body) {
   try {

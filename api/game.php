@@ -1,6 +1,7 @@
 <?php
 // Leaderboards, run tokens and score submission for Space Escape v2.
 declare(strict_types=1);
+require __DIR__ . '/cors.php';
 require __DIR__ . '/lib.php';
 require __DIR__ . '/lore.php';
 

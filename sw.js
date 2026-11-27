@@ -20,7 +20,9 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
-  if (e.request.method !== 'GET' || url.origin !== location.origin || url.pathname.includes('/api/')) return;
+  // only the game's own files: on a shared host (radio.nicholastrading.com) the rest of the site is left alone
+  const rel = url.pathname.slice(new URL(self.registration.scope).pathname.length);
+  if (e.request.method !== 'GET' || url.origin !== location.origin || !CORE.includes(rel)) return;
   e.respondWith(caches.open(CACHE).then(async (cache) => {
     const hit = await cache.match(e.request);
     // no-cache: always revalidate with the server, whatever cache lifetime the host sets
